@@ -1,9 +1,8 @@
 import express from 'express';
 import { createLogger, Logger } from '@w3f/logger';
 import { Config } from '@w3f/config';
-
 import { InputConfig } from '../types';
-import { SubscriberFactory } from '../subscriber/SubscriberFactory';
+import { SubscriberEraScanner } from '../subscriber/subscriberEraScanner.js';
 
 const _createLogger = (cfg: InputConfig): Logger => {
 
@@ -24,7 +23,7 @@ export const startAction = async (cmd): Promise<void> =>{
     server.listen(cfg.port);
 
     const logger = _createLogger(cfg);
-    const subscriber = new SubscriberFactory(cfg,logger).makeSubscriber()
+    const subscriber = new SubscriberEraScanner(cfg,logger);
     
     try {
         await subscriber.start();

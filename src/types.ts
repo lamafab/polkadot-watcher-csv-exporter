@@ -70,7 +70,6 @@ export interface WriteCSVRequest{
 export interface WriteCSVHistoricalRequest{
   api: ApiPromise;
   network: string; 
-  exportDir: string; 
   totalIssuance?: Balance;
   validatorRewardsPreviousEra?: BalanceOf;
   eraIndexes: EraIndex[];

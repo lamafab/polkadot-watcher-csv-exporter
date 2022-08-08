@@ -1,11 +1,9 @@
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { Logger } from '@w3f/logger';
 import { Text } from '@polkadot/types/primitive';
-import { BucketGCP } from '../fileUploader'
 import {
-    InputConfig, BucketUploadConfig,
+    InputConfig,
 } from '../types';
-import { isDirEmpty, isDirExistent, makeDir } from '../utils';
 import { apiTimeoutMs } from '../constants';
 
 export abstract class SubscriberTemplate {
@@ -13,23 +11,12 @@ export abstract class SubscriberTemplate {
   protected api: ApiPromise;
   protected apiTimeoutMs: number;
   protected endpoint: string;
-
-  protected exportDir: string;
-  protected isBucketEnabled: boolean;
-  protected bucket: BucketGCP;
     
     constructor(
         cfg: InputConfig,
         protected readonly logger: Logger) {
         this.endpoint = cfg.endpoint;
         this.apiTimeoutMs = cfg.apiTimeoutMs ? cfg.apiTimeoutMs : apiTimeoutMs
-        this.exportDir = cfg.exportDir;
-        this.isBucketEnabled = cfg.bucketUpload?.enabled ? cfg.bucketUpload.enabled : false;
-        if(this.isBucketEnabled) this._initBucket(cfg.bucketUpload);
-    }
-
-    protected _initBucket = (config: BucketUploadConfig): void =>{
-      this.bucket = new BucketGCP(config,this.logger)
     }
 
     protected _initAPI = async (): Promise<void> =>{
@@ -48,19 +35,4 @@ export abstract class SubscriberTemplate {
             `You are connected to chain ${this.chain} using ${nodeName} v${nodeVersion}`
         );
     }
-
-    protected _initExportDir = (): void =>{
-      if ( ! isDirExistent(this.exportDir) ) {
-        makeDir(this.exportDir)
-      }
-
-      if( ! isDirEmpty(this.exportDir)){
-        this._uploadToBucket()
-      }
-    }
-
-    protected _uploadToBucket = async (): Promise<void> =>{
-      this.isBucketEnabled && await this.bucket.uploadCSVFiles(this.exportDir)
-    }
-
 }

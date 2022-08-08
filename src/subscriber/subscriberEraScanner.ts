@@ -5,8 +5,7 @@ import readline from 'readline';
 import {
     InputConfig,
 } from '../types';
-import { closeFile, getFileNames, initReadFileStream, initWriteFileStream, isDirEmpty, isDirExistent, isNewEraEvent, makeDir } from '../utils';
-import { writeHistoricErasCSV } from '../csvWriter';
+import { isNewEraEvent } from '../utils';
 import { gatherChainDataHistorical } from '../dataGathererHistoric';
 import { ISubscriber } from './ISubscriber';
 import { SubscriberTemplate } from './subscriberTemplate';
@@ -36,26 +35,11 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
         
         await this._initAPI();
         await this._initInstanceVariables();
-        this._initExportDir();
-        await this._initDataDir()
 
         await this._handleEventsSubscriptions() // scan immediately after a event detection
         this.logger.info(`Event Scanner Based Module subscribed...`)
 
         this._requestNewScan() //first scan after a restart
-    }
-
-    private _initDataDir = async (): Promise<void> =>{
-      if ( ! isDirExistent(this.dataDir) ) {
-        makeDir(this.dataDir)
-      }
-
-      if( isDirEmpty(this.dataDir) || !getFileNames(this.dataDir,this.logger).includes(this.dataFileName) || ! await this._getLastCheckedEra()){
-        const firstEraToScan = this.config.eraScanner?.startFromEra ? this.config.eraScanner?.startFromEra : this.eraIndex.toNumber()-2 // from config or current era -2
-        const file = initWriteFileStream(this.dataDir,this.dataFileName,this.logger)
-        file.write(`${firstEraToScan}`)
-        await closeFile(file)
-      }
     }
 
     private _initInstanceVariables = async (): Promise<void> =>{
@@ -110,7 +94,6 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
         this.logger.info(`starting the CSV writing for the era ${tobeCheckedEra}`)
         await this._writeEraCSVHistoricalSpecific(tobeCheckedEra)
         await this._updateLastCheckedEra(tobeCheckedEra)
-        await this._uploadToBucket()
       }
     }
 
@@ -118,9 +101,10 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
       const network = this.chain.toString().toLowerCase()
       const eraIndex = this.api.createType("EraIndex",era)
 
-      const request = {api:this.api,network,exportDir:this.exportDir,eraIndexes:[eraIndex]}
+      const request = {api:this.api,network,eraIndexes:[eraIndex]}
       const chainData = await gatherChainDataHistorical(request, this.logger)
-      await writeHistoricErasCSV(request, chainData, this.logger)
+
+      // TODO: Insert into SQL
     }
 
     private _handleEraChange = async (newEra: EraIndex): Promise<void> =>{
@@ -129,28 +113,15 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
     }
 
     private _getLastCheckedEra = async (): Promise<number> => {
-      const file = initReadFileStream(this.dataDir,this.dataFileName,this.logger)
-      const rl = readline.createInterface({
-        input: file,
-        crlfDelay: Infinity
-      });
-      
+      // TODO: This should be read from SQL
       let lastCheckedEra: number
-      for await (const line of rl) {
-        // Each line in input.txt will be successively available here as `line`.
-        //console.log(`Line from file: ${line}`);
-        lastCheckedEra = Number.parseInt(line)
-      }
-      await closeFile(file)
 
       return lastCheckedEra
     }
 
     private _updateLastCheckedEra = async (eraIndex: number): Promise<boolean> => {
-      const file = initWriteFileStream(this.dataDir,this.dataFileName,this.logger)
-      const result = file.write(eraIndex.toString())
-      await closeFile(file)
-      return result
+      // TODO: This should update to SQL
+      return true
     }
 
 }
