@@ -5,7 +5,7 @@ import { EraIndex, Event } from '@polkadot/types/interfaces';
 import { ApiPromise } from '@polkadot/api';
 import { EraLastBlock } from './types';
 
-export const getDisplayName = (identity: DeriveAccountRegistration): string =>{
+export const getDisplayName = (identity: DeriveAccountRegistration): string => {
   /* TODO
   This code is coming from https://github.com/mariopino/substrate-data-csv/blob/master/utils.js
   and needs to be refactored
@@ -26,13 +26,13 @@ export const getDisplayName = (identity: DeriveAccountRegistration): string =>{
 const firstBlockCurrentEra = async (api: ApiPromise): Promise<number> => {
 
   const last = await api.rpc.chain.getHeader()
-  const deriveSessionProgress = await api.derive.session.progress();  
+  const deriveSessionProgress = await api.derive.session.progress();
   //there is an intrinsic api error that has to be corrected next => guessed
-  const guessedFirstBlockCurrentEra = last.number.unwrap().toNumber() - deriveSessionProgress.eraProgress.toNumber() + 50 
+  const guessedFirstBlockCurrentEra = last.number.unwrap().toNumber() - deriveSessionProgress.eraProgress.toNumber() + 50
 
   const hash = await api.rpc.chain.getBlockHash(guessedFirstBlockCurrentEra)
   const apiAt = await api.at(hash)
-  const [_,firstBlockCurrentEra] = await apiAt.query.babe.epochStart()
+  const [_, firstBlockCurrentEra] = await apiAt.query.babe.epochStart()
 
   return firstBlockCurrentEra.toNumber()
 }
@@ -41,7 +41,7 @@ const howManyErasAgo = async (eraIndex: EraIndex, api: ApiPromise): Promise<numb
 
   const currentEraIndex = (await api.query.staking.activeEra()).unwrap().index;
   return currentEraIndex.toNumber() - eraIndex.toNumber()
-  
+
 }
 
 const lastBlockOf = async (eraIndex: EraIndex, api: ApiPromise): Promise<number> => {
@@ -49,26 +49,26 @@ const lastBlockOf = async (eraIndex: EraIndex, api: ApiPromise): Promise<number>
   const howManyErasAgoVar = await howManyErasAgo(eraIndex, api)
   if (howManyErasAgoVar == 0) return (await api.rpc.chain.getHeader()).number.unwrap().toNumber()
 
-  const lastBlockPreviousEra = await firstBlockCurrentEra(api) - 1  
+  const lastBlockPreviousEra = await firstBlockCurrentEra(api) - 1
 
-  const deriveSessionProgress = await api.derive.session.progress();  
+  const deriveSessionProgress = await api.derive.session.progress();
 
   // the api result is still not reliable => guessed
-  const guessedResult = lastBlockPreviousEra - ( ( howManyErasAgoVar - 1 ) * deriveSessionProgress.eraLength.toNumber() )
+  const guessedResult = lastBlockPreviousEra - ((howManyErasAgoVar - 1) * deriveSessionProgress.eraLength.toNumber())
 
   const hash = await api.rpc.chain.getBlockHash(guessedResult + 50)
   const apiAt = await api.at(hash)
-  const [_,firstBlockNextTargetEra] = await apiAt.query.babe.epochStart()
-  
+  const [_, firstBlockNextTargetEra] = await apiAt.query.babe.epochStart()
+
   return firstBlockNextTargetEra.toNumber() - 1
-  
+
 }
 
 export const erasLastBlock = async (indexes: EraIndex[], api: ApiPromise): Promise<EraLastBlock[]> => {
 
   const result = await Promise.all(indexes.map(async index => {
-    return {era: index, block: await lastBlockOf(index,api)}
-   }))
+    return { era: index, block: await lastBlockOf(index, api) }
+  }))
 
   return result
 
@@ -79,29 +79,29 @@ export const getErrorMessage = (error: unknown): string => {
   if (typeof error === "string") {
     errorString = error
   } else if (error instanceof Error) {
-    errorString = error.message 
+    errorString = error.message
   }
   return errorString
 }
 
-export const delay = (ms: number): Promise<void> =>{
-  return new Promise( resolve => setTimeout(resolve, ms) );
+export const delay = (ms: number): Promise<void> => {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-export const initWriteFileStream = (dirPath: string,fileName: string,logger: Logger): WriteStream => {
+export const initWriteFileStream = (dirPath: string, fileName: string, logger: Logger): WriteStream => {
 
   const filePath = `${dirPath}/${fileName}`;
   const file = fs.createWriteStream(filePath);
-  file.on('error', function(err) { logger.error(err.stack) });
+  file.on('error', function (err) { logger.error(err.stack) });
 
   return file
 }
 
-export const initReadFileStream = (dirPath: string,fileName: string,logger: Logger): ReadStream => {
+export const initReadFileStream = (dirPath: string, fileName: string, logger: Logger): ReadStream => {
 
   const filePath = `${dirPath}/${fileName}`;
   const file = fs.createReadStream(filePath);
-  file.on('error', function(err) { logger.error(err.stack) });
+  file.on('error', function (err) { logger.error(err.stack) });
 
   return file
 }

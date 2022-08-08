@@ -6,13 +6,13 @@ import { SubscriberEraScanner } from '../subscriber/subscriberEraScanner.js';
 
 const _createLogger = (cfg: InputConfig): Logger => {
 
-  let logLevel = cfg.logLevel
-  if(cfg.debug?.enabled) logLevel = 'debug'
+    let logLevel = cfg.logLevel
+    if (cfg.debug?.enabled) logLevel = 'debug'
 
-  return createLogger(logLevel);
+    return createLogger(logLevel);
 }
 
-export const startAction = async (cmd): Promise<void> =>{
+export const startAction = async (cmd): Promise<void> => {
     const cfg = new Config<InputConfig>().parse(cmd.config);
 
     const server = express();
@@ -23,8 +23,8 @@ export const startAction = async (cmd): Promise<void> =>{
     server.listen(cfg.port);
 
     const logger = _createLogger(cfg);
-    const subscriber = new SubscriberEraScanner(cfg,logger);
-    
+    const subscriber = new SubscriberEraScanner(cfg, logger);
+
     try {
         await subscriber.start();
     } catch (e) {

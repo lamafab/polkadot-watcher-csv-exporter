@@ -5,38 +5,38 @@ import { DeriveStakingAccount } from '@polkadot/api-derive/staking/types';
 import type { PalletStakingExposure } from '@polkadot/types/lookup';
 
 export interface InputConfig {
-    logLevel: string;
-    debug?: DebugConfig;
-    port: number;
-    endpoint: string;
-    exportDir: string;
-    sessionOnly: boolean;
-    endSessionBlockDistance: number;
-    bucketUpload?: BucketUploadConfig;
-    cronjob?: CronJobConfig;
-    apiChunkSize?: number;
-    apiTimeoutMs?: number;
-    historic?: {
-      enabled: boolean;
-      historySize: number;
-    };
-    eraScanner?: {
-      enabled: boolean;
-      dataDir: string;
-      startFromEra?: number;
-    };
+  logLevel: string;
+  debug?: DebugConfig;
+  port: number;
+  endpoint: string;
+  exportDir: string;
+  sessionOnly: boolean;
+  endSessionBlockDistance: number;
+  bucketUpload?: BucketUploadConfig;
+  cronjob?: CronJobConfig;
+  apiChunkSize?: number;
+  apiTimeoutMs?: number;
+  historic?: {
+    enabled: boolean;
+    historySize: number;
+  };
+  eraScanner?: {
+    enabled: boolean;
+    dataDir: string;
+    startFromEra?: number;
+  };
 }
 
-interface DebugConfig{
+interface DebugConfig {
   enabled: boolean;
   forceInitialWrite: boolean;
 }
 
-export interface CronJobConfig{
+export interface CronJobConfig {
   enabled: boolean;
 }
 
-export interface BucketUploadConfig{
+export interface BucketUploadConfig {
   enabled: boolean;
   gcpServiceAccount: string;
   gcpProject: string;
@@ -55,36 +55,36 @@ export interface Voter {
   value: Compact<Balance>;
 }
 
-export interface WriteCSVRequest{
+export interface WriteCSVRequest {
   api: ApiPromise;
   apiChunkSize: number;
-  network: string; 
-  exportDir: string; 
-  eraIndex: EraIndex; 
-  sessionIndex: SessionIndex; 
+  network: string;
+  exportDir: string;
+  eraIndex: EraIndex;
+  sessionIndex: SessionIndex;
   blockNumber: Compact<BlockNumber>;
   totalIssuance?: Balance;
   validatorRewardsPreviousEra?: BalanceOf;
 }
 
-export interface WriteCSVHistoricalRequest{
+export interface WriteCSVHistoricalRequest {
   api: ApiPromise;
-  network: string; 
+  network: string;
   totalIssuance?: Balance;
   validatorRewardsPreviousEra?: BalanceOf;
   eraIndexes: EraIndex[];
 }
 
-export interface WriteNominatorCSVRequest extends WriteCSVRequest{
+export interface WriteNominatorCSVRequest extends WriteCSVRequest {
   nominatorStaking: DeriveStakingAccount[];
 }
 
-export interface WriteValidatorCSVRequest extends WriteCSVRequest{
+export interface WriteValidatorCSVRequest extends WriteCSVRequest {
   myValidatorStaking: MyDeriveStakingAccount[];
   myWaitingValidatorStaking?: MyDeriveStakingAccount[];
 }
 
-export interface WriteValidatorHistoricCSVRequest extends WriteCSVHistoricalRequest{
+export interface WriteValidatorHistoricCSVRequest extends WriteCSVHistoricalRequest {
   erasData: ChainData[];
 }
 
@@ -101,6 +101,6 @@ export interface ChainData {
 }
 
 export interface EraLastBlock {
-  era: EraIndex; 
+  era: EraIndex;
   block: number;
 }

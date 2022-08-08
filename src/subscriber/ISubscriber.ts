@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/interface-name-prefix */
 
-export interface ISubscriber{
+export interface ISubscriber {
   start(): Promise<void>;
 }
