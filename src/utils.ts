@@ -74,38 +74,6 @@ export const erasLastBlock = async (indexes: EraIndex[], api: ApiPromise): Promi
 
 }
 
-export const getErrorMessage = (error: unknown): string => {
-  let errorString: string
-  if (typeof error === "string") {
-    errorString = error
-  } else if (error instanceof Error) {
-    errorString = error.message
-  }
-  return errorString
-}
-
-export const delay = (ms: number): Promise<void> => {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-export const initWriteFileStream = (dirPath: string, fileName: string, logger: Logger): WriteStream => {
-
-  const filePath = `${dirPath}/${fileName}`;
-  const file = fs.createWriteStream(filePath);
-  file.on('error', function (err) { logger.error(err.stack) });
-
-  return file
-}
-
-export const initReadFileStream = (dirPath: string, fileName: string, logger: Logger): ReadStream => {
-
-  const filePath = `${dirPath}/${fileName}`;
-  const file = fs.createReadStream(filePath);
-  file.on('error', function (err) { logger.error(err.stack) });
-
-  return file
-}
-
 export const isNewEraEvent = (event: Event, api: ApiPromise): boolean => {
   return api.events.session.NewSession.is(event)
 }

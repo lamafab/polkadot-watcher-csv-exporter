@@ -3,7 +3,6 @@ import program from 'commander';
 import { startAction } from './actions/start';
 import '@polkadot/api-augment'; //https://github.com/polkadot-js/api/issues/4450
 
-
 program
   .command('start')
   .description('Starts the watcher.')
@@ -11,5 +10,4 @@ program
   .action(startAction);
 
 program.allowUnknownOption(false);
-
 program.parse(process.argv);
