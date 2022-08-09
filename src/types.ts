@@ -96,9 +96,7 @@ export interface ChainData {
   eraPoints: EraRewardPoints;
   totalIssuance: Balance;
   validatorRewardsPreviousEra: BalanceOf;
-  nominatorStaking: DeriveStakingAccount[];
   myValidatorStaking: MyDeriveStakingAccount[];
-  myWaitingValidatorStaking?: MyDeriveStakingAccount[];
 }
 
 export interface EraLastBlock {
