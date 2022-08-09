@@ -3,3 +3,4 @@ config/*
 node_modules
 dist
 data*
+!src/database.ts
