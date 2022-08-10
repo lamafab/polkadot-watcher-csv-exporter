@@ -89,14 +89,13 @@ export interface WriteValidatorHistoricCSVRequest extends WriteCSVHistoricalRequ
 }
 
 export interface ChainData {
-  eraIndex?: EraIndex;
-  sessionIndex?: SessionIndex;
+  eraIndex: EraIndex;
   unixTime: number;
-  blockNumber?: Compact<BlockNumber>;
+  blockNumber: Compact<BlockNumber>;
   eraPoints: EraRewardPoints;
   totalIssuance: Balance;
   validatorRewardsPreviousEra: BalanceOf;
-  myValidatorStaking: MyDeriveStakingAccount[];
+  validatorInfo: MyDeriveStakingAccount[];
 }
 
 export interface EraLastBlock {

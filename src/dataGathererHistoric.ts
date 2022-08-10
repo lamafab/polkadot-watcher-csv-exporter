@@ -56,13 +56,12 @@ const _gatherDataHistorical = async (request: WriteCSVHistoricalRequest, logger:
 
     return {
       eraIndex: index,
-      sessionIndex: api.createType('SessionIndex', sessionIndex),
       unixTime: (await apiAt.query.timestamp.now()).toNumber(),
       blockNumber: api.createType('Compact<Balance>', eraBlockReference.block),
       eraPoints: await api.query.staking.erasRewardPoints(index),
       totalIssuance: await apiAt.query.balances.totalIssuance(),
       validatorRewardsPreviousEra: (await api.query.staking.erasValidatorReward(index.sub(new BN(1)))).unwrap(),
-      myValidatorStaking: myValidatorStaking
+      validatorInfo: myValidatorStaking
     } as ChainData
   }))
 
