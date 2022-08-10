@@ -12,27 +12,27 @@ export class PostgreSql {
 		await this.client.connect();
 	}
 
-	public fetch_last_checked_era = async (): Promise<number> => {
+	public fetchLastCheckedEra = async (): Promise<number> => {
 		//...
 		return 0
 	}
 
-	public update_last_checked_era = async (): Promise<boolean> => {
+	public updateLastCheckedEra = async (): Promise<boolean> => {
 		// ...
 		return false
 	}
 
-	public insert_chain_data = async (chainData: ChainData): Promise<void> => {
+	public insertChainData = async (chainData: ChainData): Promise<void> => {
 		try {
 			await this.client.query("BEGIN");
-			await this._sql_insert_chain_data(chainData);
+			await this._sqlInsertChainData(chainData);
 			await this.client.query("COMMIT");
 		} catch (e) {
 			await this.client.query("ROLLBACK");
 		}
 	}
 
-	private _sql_insert_chain_data = async (chainData: ChainData): Promise<void> => {
+	private _sqlInsertChainData = async (chainData: ChainData): Promise<void> => {
 		const eraInfoId = (await this.client.query("\
 			INSERT INTO era_info (\
 				era_index,\

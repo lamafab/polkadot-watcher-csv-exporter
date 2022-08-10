@@ -77,7 +77,7 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
           */
         } while (this.isNewScanRequired);
       } catch (error) {
-        this.logger.error(`the SCAN had an issue ! last checked era: ${await this.database.fetch_last_checked_era()}: ${error}`)
+        this.logger.error(`the SCAN had an issue ! last checked era: ${await this.database.fetchLastCheckedEra()}: ${error}`)
         this.logger.warn('quitting...')
         process.exit(-1);
       } finally {
@@ -87,7 +87,7 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
   }
 
   private _triggerEraScannerActions = async (): Promise<void> => {
-    const lastCheckedEra = await this.database.fetch_last_checked_era();
+    const lastCheckedEra = await this.database.fetchLastCheckedEra();
 
     while (lastCheckedEra < this.eraIndex.toNumber() - 1) {
       const tobeCheckedEra = lastCheckedEra + 1
@@ -100,7 +100,7 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
       const chainData = await gatherChainDataHistorical(request, this.logger)
 
       // Insert the chainData into the database and track latest, checked Era.
-      await this.database.insert_chain_data(chainData);
+      await this.database.insertChainData(chainData);
     }
   }
 }
