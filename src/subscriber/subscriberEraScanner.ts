@@ -48,7 +48,10 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
         const { event } = record;
         if (isNewEraEvent(event, this.api)) {
           const era = (await this.api.query.staking.activeEra()).unwrap().index
-          if (era != this.eraIndex) this._handleEraChange(era)
+          if (era != this.eraIndex) {
+            this.eraIndex = era ;
+            this._requestNewScan()
+          }
         }
       })
     })
@@ -74,7 +77,7 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
           */
         } while (this.isNewScanRequired);
       } catch (error) {
-        this.logger.error(`the SCAN had an issue ! last checked era: ${await this._getLastCheckedEra()}: ${error}`)
+        this.logger.error(`the SCAN had an issue ! last checked era: ${await this.database.fetch_last_checked_era()}: ${error}`)
         this.logger.warn('quitting...')
         process.exit(-1);
       } finally {
@@ -84,39 +87,20 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
   }
 
   private _triggerEraScannerActions = async (): Promise<void> => {
-    while (await this._getLastCheckedEra() < this.eraIndex.toNumber() - 1) {
-      const tobeCheckedEra = await this._getLastCheckedEra() + 1
+    const lastCheckedEra = await this.database.fetch_last_checked_era();
+
+    while (lastCheckedEra < this.eraIndex.toNumber() - 1) {
+      const tobeCheckedEra = lastCheckedEra + 1
       this.logger.info(`starting the CSV writing for the era ${tobeCheckedEra}`)
-      await this._writeEraCSVHistoricalSpecific(tobeCheckedEra)
-      await this._updateLastCheckedEra(tobeCheckedEra)
+
+      // Prepare for gathering.
+      const network = this.chain.toString().toLowerCase()
+      const eraIndex = this.api.createType("EraIndex", tobeCheckedEra)
+      const request = { api: this.api, network, eraIndex }
+      const chainData = await gatherChainDataHistorical(request, this.logger)
+
+      // Insert the chainData into the database and track latest, checked Era.
+      await this.database.insert_chain_data(chainData);
     }
   }
-
-  private _writeEraCSVHistoricalSpecific = async (era: number): Promise<void> => {
-    const network = this.chain.toString().toLowerCase()
-    const eraIndex = this.api.createType("EraIndex", era)
-
-    const request = { api: this.api, network, eraIndex }
-    const chainData = await gatherChainDataHistorical(request, this.logger)
-
-    await this.database.insert_chain_data(chainData);
-  }
-
-  private _handleEraChange = async (newEra: EraIndex): Promise<void> => {
-    this.eraIndex = newEra
-    this._requestNewScan()
-  }
-
-  private _getLastCheckedEra = async (): Promise<number> => {
-    // TODO: This should be read from SQL
-    let lastCheckedEra: number
-
-    return lastCheckedEra
-  }
-
-  private _updateLastCheckedEra = async (eraIndex: number): Promise<boolean> => {
-    // TODO: This should update to SQL
-    return true
-  }
-
 }

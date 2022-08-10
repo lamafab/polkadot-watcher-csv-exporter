@@ -12,17 +12,27 @@ export class PostgreSql {
 		await this.client.connect();
 	}
 
+	public fetch_last_checked_era = async (): Promise<number> => {
+		//...
+		return 0
+	}
+
+	public update_last_checked_era = async (): Promise<boolean> => {
+		// ...
+		return false
+	}
+
 	public insert_chain_data = async (chainData: ChainData): Promise<void> => {
 		try {
 			await this.client.query("BEGIN");
-			await this.sql_insert(chainData);
+			await this._sql_insert_chain_data(chainData);
 			await this.client.query("COMMIT");
 		} catch (e) {
 			await this.client.query("ROLLBACK");
 		}
 	}
 
-	private sql_insert = async (chainData: ChainData): Promise<void> => {
+	private _sql_insert_chain_data = async (chainData: ChainData): Promise<void> => {
 		const eraInfoId = (await this.client.query("\
 			INSERT INTO era_info (\
 				era_index,\
@@ -85,5 +95,7 @@ export class PostgreSql {
 				]);
 			}
 		}
+
+		// TODO: Track latest checked era.
 	}
 }
