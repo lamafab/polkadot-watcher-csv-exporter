@@ -13,7 +13,16 @@ export class PostgreSql {
 	}
 
 	public insert_chain_data = async (chainData: ChainData): Promise<void> => {
-		await this.client.query("BEGIN");
+		try {
+			await this.client.query("BEGIN");
+			await this.sql_insert(chainData);
+			await this.client.query("COMMIT");
+		} catch (e) {
+			await this.client.query("ROLLBACK");
+		}
+	}
+
+	private sql_insert = async (chainData: ChainData): Promise<void> => {
 		const eraInfoId = (await this.client.query("\
 			INSERT INTO era_info (\
 				era_index,\
@@ -76,7 +85,5 @@ export class PostgreSql {
 				]);
 			}
 		}
-
-		await this.client.query("COMMIT");
 	}
 }
