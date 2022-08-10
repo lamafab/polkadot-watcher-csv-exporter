@@ -1,24 +1,30 @@
 /*eslint @typescript-eslint/no-use-before-define: ["error", { "variables": false }]*/
 
 import { DeriveEraPoints } from '@polkadot/api-derive/staking/types';
-import { MyDeriveStakingAccount, ChainData, WriteCSVHistoricalRequest, EraLastBlock, Voter } from "./types";
+import { MyDeriveStakingAccount, ChainData, EraLastBlock, Voter } from "./types";
 import { Logger } from '@w3f/logger';
 import { ApiPromise } from '@polkadot/api';
 import { getDisplayName, erasLastBlock as erasLastBlockFunction } from './utils';
 import { DeriveEraExposure, DeriveStakingAccount } from '@polkadot/api-derive/staking/types'
 import { DeriveAccountInfo } from '@polkadot/api-derive/accounts/types'
 import BN from 'bn.js';
-import type { StakingLedger, Nominations } from '@polkadot/types/interfaces';
+import type { EraIndex, StakingLedger, Nominations } from '@polkadot/types/interfaces';
 import type { PalletStakingNominations, PalletStakingStakingLedger, PalletStakingExposure } from '@polkadot/types/lookup';
 
-export const gatherChainDataHistorical = async (request: WriteCSVHistoricalRequest, logger: Logger): Promise<ChainData> => {
+export interface ChainDataHistoricalRequest {
+  api: ApiPromise;
+  network: string;
+  eraIndex: EraIndex;
+}
+
+export const gatherChainDataHistorical = async (request: ChainDataHistoricalRequest, logger: Logger): Promise<ChainData> => {
   logger.info(`Historical Data gathering triggered...`)
   const data = await _gatherDataHistorical(request, logger)
   logger.info(`Historical Data have been gathered.`)
   return data
 }
 
-const _gatherDataHistorical = async (request: WriteCSVHistoricalRequest, logger: Logger): Promise<ChainData> => {
+const _gatherDataHistorical = async (request: ChainDataHistoricalRequest, logger: Logger): Promise<ChainData> => {
   logger.debug(`gathering some data from the chain...`)
   const { api, eraIndex } = request
 

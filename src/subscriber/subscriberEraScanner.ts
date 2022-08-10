@@ -10,6 +10,7 @@ import { gatherChainDataHistorical } from '../dataGathererHistoric';
 import { ISubscriber } from './ISubscriber';
 import { SubscriberTemplate } from './subscriberTemplate';
 import { PostgreSql } from '../database';
+import { ApiPromise } from '@polkadot/api';
 
 export class SubscriberEraScanner extends SubscriberTemplate implements ISubscriber {
   private config: InputConfig;

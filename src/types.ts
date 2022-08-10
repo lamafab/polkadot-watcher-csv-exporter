@@ -56,12 +56,6 @@ export interface Voter {
   value: Compact<Balance>;
 }
 
-export interface WriteCSVHistoricalRequest {
-  api: ApiPromise;
-  network: string;
-  eraIndex: EraIndex;
-}
-
 export interface ChainData {
   eraIndex: EraIndex;
   unixTime: number;
