@@ -10,7 +10,6 @@ import { gatherChainDataHistorical } from '../dataGathererHistoric';
 import { ISubscriber } from './ISubscriber';
 import { SubscriberTemplate } from './subscriberTemplate';
 import { PostgreSql } from '../database';
-import { ApiPromise } from '@polkadot/api';
 
 export class SubscriberEraScanner extends SubscriberTemplate implements ISubscriber {
   private config: InputConfig;
@@ -28,15 +27,13 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
   }
 
   public start = async (): Promise<void> => {
-
     this.logger.info('Era Scanner mode active')
 
     await this._initAPI();
     await this._initInstanceVariables();
-
     await this._handleEventsSubscriptions() // scan immediately after a event detection
-    this.logger.info(`Event Scanner Based Module subscribed...`)
 
+    this.logger.info(`Event Scanner Based Module subscribed...`)
     this._requestNewScan() //first scan after a restart
   }
 
