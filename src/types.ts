@@ -9,6 +9,7 @@ export interface InputConfig {
   debug?: DebugConfig;
   port: number;
   endpoint: string;
+  database_url: string;
   exportDir: string;
   sessionOnly: boolean;
   endSessionBlockDistance: number;

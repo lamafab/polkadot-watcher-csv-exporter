@@ -9,24 +9,21 @@ import { isNewEraEvent } from '../utils';
 import { gatherChainDataHistorical } from '../dataGathererHistoric';
 import { ISubscriber } from './ISubscriber';
 import { SubscriberTemplate } from './subscriberTemplate';
+import { PostgreSql } from '../database';
 
 export class SubscriberEraScanner extends SubscriberTemplate implements ISubscriber {
   private config: InputConfig;
 
   private eraIndex: EraIndex;
-
-  private dataDir: string
   private dataFileName = dataFileName
-
   private isScanOngoing = false //lock for concurrency
   private isNewScanRequired = false
+  private database: PostgreSql;
 
-  constructor(
-    cfg: InputConfig,
-    protected readonly logger: Logger) {
+  constructor(cfg: InputConfig, protected readonly logger: Logger) {
     super(cfg, logger)
-    this.config = cfg
-    this.dataDir = cfg.eraScanner?.dataDir
+    this.config = cfg;
+    this.database = new PostgreSql(cfg.database_url);
   }
 
   public start = async (): Promise<void> => {
@@ -104,7 +101,9 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
     const request = { api: this.api, network, eraIndexes: [eraIndex] }
     const chainData = await gatherChainDataHistorical(request, this.logger)
 
-    // TODO: Insert into SQL
+    for (const data of chainData) {
+      await this.database.insert_chain_data(data);
+    }
   }
 
   private _handleEraChange = async (newEra: EraIndex): Promise<void> => {
