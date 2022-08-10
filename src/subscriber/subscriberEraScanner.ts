@@ -49,7 +49,7 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
         if (isNewEraEvent(event, this.api)) {
           const era = (await this.api.query.staking.activeEra()).unwrap().index
           if (era != this.eraIndex) {
-            this.eraIndex = era ;
+            this.eraIndex = era;
             this._requestNewScan()
           }
         }

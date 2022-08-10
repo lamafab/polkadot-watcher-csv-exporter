@@ -13,13 +13,19 @@ export class PostgreSql {
 	}
 
 	public fetchLastCheckedEra = async (): Promise<number> => {
-		//...
-		return 0
-	}
-
-	public updateLastCheckedEra = async (): Promise<boolean> => {
-		// ...
-		return false
+		// It's debatable whether this should be optimized, such as using a
+		// single table for the last checked era and updating it on
+		// `insertChainData`. But this is probably sufficient.
+		return (await this.client.query("\
+			SELECT\
+				era_index\
+			FROM\
+				era_info\
+			ORDER BY\
+				era_index\
+			DESC LIMIT\
+				1\
+		")).rows[0].id;
 	}
 
 	public insertChainData = async (chainData: ChainData): Promise<void> => {
@@ -36,7 +42,7 @@ export class PostgreSql {
 		const eraInfoId = (await this.client.query("\
 			INSERT INTO era_info (\
 				era_index,\
-				era_points_total\
+				era_points_total,\
 			)\
 			VALUES ($1, $2)\
 			RETURNING id\
@@ -95,7 +101,5 @@ export class PostgreSql {
 				]);
 			}
 		}
-
-		// TODO: Track latest checked era.
 	}
 }
