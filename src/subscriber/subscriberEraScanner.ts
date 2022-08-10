@@ -98,12 +98,10 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
     const network = this.chain.toString().toLowerCase()
     const eraIndex = this.api.createType("EraIndex", era)
 
-    const request = { api: this.api, network, eraIndexes: [eraIndex] }
+    const request = { api: this.api, network, eraIndex }
     const chainData = await gatherChainDataHistorical(request, this.logger)
 
-    for (const data of chainData) {
-      await this.database.insert_chain_data(data);
-    }
+    await this.database.insert_chain_data(chainData);
   }
 
   private _handleEraChange = async (newEra: EraIndex): Promise<void> => {

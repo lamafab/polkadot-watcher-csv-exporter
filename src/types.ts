@@ -59,7 +59,7 @@ export interface Voter {
 export interface WriteCSVHistoricalRequest {
   api: ApiPromise;
   network: string;
-  eraIndexes: EraIndex[];
+  eraIndex: EraIndex;
 }
 
 export interface ChainData {

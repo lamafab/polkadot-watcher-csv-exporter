@@ -11,61 +11,47 @@ import BN from 'bn.js';
 import type { StakingLedger, Nominations } from '@polkadot/types/interfaces';
 import type { PalletStakingNominations, PalletStakingStakingLedger, PalletStakingExposure } from '@polkadot/types/lookup';
 
-export const gatherChainDataHistorical = async (request: WriteCSVHistoricalRequest, logger: Logger): Promise<ChainData[]> => {
+export const gatherChainDataHistorical = async (request: WriteCSVHistoricalRequest, logger: Logger): Promise<ChainData> => {
   logger.info(`Historical Data gathering triggered...`)
   const data = await _gatherDataHistorical(request, logger)
   logger.info(`Historical Data have been gathered.`)
   return data
 }
 
-const _gatherDataHistorical = async (request: WriteCSVHistoricalRequest, logger: Logger): Promise<ChainData[]> => {
+const _gatherDataHistorical = async (request: WriteCSVHistoricalRequest, logger: Logger): Promise<ChainData> => {
   logger.debug(`gathering some data from the chain...`)
-  const { api, eraIndexes } = request
+  const { api, eraIndex } = request
 
-  logger.info(`Requested eras: ${eraIndexes.map(era => era.toString()).join(', ')}`);
+  logger.info(`Requested era: ${eraIndex}`);
   logger.debug(`Gathering data ...`);
 
-  const [
+  const erasPoints = (await api.derive.staking._erasPoints([eraIndex], false)).find(({ era }) => era.eq(eraIndex));
+  const erasExposure = (await api.derive.staking._erasExposure([eraIndex], false)).find(({ era }) => era.eq(eraIndex));
+  const eraBlockReference = (await erasLastBlockFunction([eraIndex], api)).find(({ era }) => era.eq(eraIndex));
+  const hashReference = await api.rpc.chain.getBlockHash(eraBlockReference.block)
+  const apiAt = await api.at(hashReference)
+
+  logger.debug(`nominators...`)
+  const nominators = await _getNominatorStaking(api, eraBlockReference, logger)
+  logger.debug(`got nominators...`)
+  logger.debug(`valdiators...`)
+  const myValidatorStaking = await _getEraHistoricValidatorStakingInfo(
+    api,
     erasPoints,
-    erasExposures,
-    erasLastBlock
-  ] = await Promise.all([
-    api.derive.staking._erasPoints(eraIndexes, false),
-    api.derive.staking._erasExposure(eraIndexes, false),
-    erasLastBlockFunction(eraIndexes, api)
-  ]);
+    erasExposure,
+    nominators,
+  );
+  logger.debug(`got validators...`)
 
-  const chainDataEras = Promise.all(eraIndexes.map(async index => {
-
-    const eraBlockReference = erasLastBlock.find(({ era }) => era.eq(index))
-    const hashReference = await api.rpc.chain.getBlockHash(eraBlockReference.block)
-    const apiAt = await api.at(hashReference)
-    const sessionIndex = await apiAt.query.session.currentIndex()
-
-    logger.debug(`nominators...`)
-    const nominators = await _getNominatorStaking(api, eraBlockReference, logger)
-    logger.debug(`got nominators...`)
-    logger.debug(`valdiators...`)
-    const myValidatorStaking = await _getEraHistoricValidatorStakingInfo(
-      api,
-      erasPoints.find(({ era }) => era.eq(index)),
-      erasExposures.find(({ era }) => era.eq(index)),
-      nominators,
-    );
-    logger.debug(`got validators...`)
-
-    return {
-      eraIndex: index,
-      unixTime: (await apiAt.query.timestamp.now()).toNumber(),
-      blockNumber: api.createType('Compact<Balance>', eraBlockReference.block),
-      eraPoints: await api.query.staking.erasRewardPoints(index),
-      totalIssuance: await apiAt.query.balances.totalIssuance(),
-      validatorRewardsPreviousEra: (await api.query.staking.erasValidatorReward(index.sub(new BN(1)))).unwrap(),
-      validatorInfo: myValidatorStaking
-    } as ChainData
-  }))
-
-  return chainDataEras
+  return {
+    eraIndex: eraIndex,
+    unixTime: (await apiAt.query.timestamp.now()).toNumber(),
+    blockNumber: api.createType('Compact<Balance>', eraBlockReference.block),
+    eraPoints: await api.query.staking.erasRewardPoints(eraIndex),
+    totalIssuance: await apiAt.query.balances.totalIssuance(),
+    validatorRewardsPreviousEra: (await api.query.staking.erasValidatorReward(eraIndex.sub(new BN(1)))).unwrap(),
+    validatorInfo: myValidatorStaking
+  } as ChainData
 }
 
 interface MyNominator {
