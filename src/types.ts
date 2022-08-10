@@ -56,37 +56,10 @@ export interface Voter {
   value: Compact<Balance>;
 }
 
-export interface WriteCSVRequest {
-  api: ApiPromise;
-  apiChunkSize: number;
-  network: string;
-  exportDir: string;
-  eraIndex: EraIndex;
-  sessionIndex: SessionIndex;
-  blockNumber: Compact<BlockNumber>;
-  totalIssuance?: Balance;
-  validatorRewardsPreviousEra?: BalanceOf;
-}
-
 export interface WriteCSVHistoricalRequest {
   api: ApiPromise;
   network: string;
-  totalIssuance?: Balance;
-  validatorRewardsPreviousEra?: BalanceOf;
   eraIndexes: EraIndex[];
-}
-
-export interface WriteNominatorCSVRequest extends WriteCSVRequest {
-  nominatorStaking: DeriveStakingAccount[];
-}
-
-export interface WriteValidatorCSVRequest extends WriteCSVRequest {
-  myValidatorStaking: MyDeriveStakingAccount[];
-  myWaitingValidatorStaking?: MyDeriveStakingAccount[];
-}
-
-export interface WriteValidatorHistoricCSVRequest extends WriteCSVHistoricalRequest {
-  erasData: ChainData[];
 }
 
 export interface ChainData {
