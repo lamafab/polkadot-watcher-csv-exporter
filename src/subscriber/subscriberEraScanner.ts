@@ -34,7 +34,8 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
     await this._handleEventsSubscriptions() // scan immediately after a event detection
 
     this.logger.info(`Event Scanner Based Module subscribed...`)
-    this._requestNewScan() //first scan after a restart
+    // First scan after a restart
+    this._requestNewScan()
   }
 
   private _initInstanceVariables = async (): Promise<void> => {
@@ -88,8 +89,15 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
 
   private _triggerEraScannerActions = async (): Promise<void> => {
     const lastCheckedEra = await this.database.fetchLastCheckedEra();
+    const currentEra = this.eraIndex.toNumber();
 
-    while (lastCheckedEra < this.eraIndex.toNumber() - 1) {
+    let startFrom = lastCheckedEra;
+    if (currentEra > lastCheckedEra + 84) {
+      startFrom = currentEra - 84;
+      this.logger.warn(`Skipping eras from ${lastCheckedEra} to ${currentEra - 85}, max depth exceeded!`);
+    }
+
+    while (startFrom < currentEra - 1) {
       const tobeCheckedEra = lastCheckedEra + 1
       this.logger.info(`starting the CSV writing for the era ${tobeCheckedEra}`)
 
