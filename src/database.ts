@@ -43,8 +43,9 @@ export class PostgreSql {
 			await this.client.query("BEGIN");
 			await this._sqlInsertChainData(chainData);
 			await this.client.query("COMMIT");
-		} catch (e) {
+		} catch (error) {
 			await this.client.query("ROLLBACK");
+			throw Error(`Failed to insert chain data, rolled back transaction: ${error}`);
 		}
 	}
 
@@ -52,13 +53,13 @@ export class PostgreSql {
 		const eraInfoId = (await this.client.query("\
 			INSERT INTO era_info (\
 				era_index,\
-				era_points_total,\
+				era_points_total\
 			)\
 			VALUES ($1, $2)\
 			RETURNING id\
 		", [
-			chainData.eraIndex,
-			chainData.eraPoints.total,
+			chainData.eraIndex.toNumber(),
+			chainData.eraPoints.total.toNumber(),
 		])).rows[0].id;
 
 		for (const validator of chainData.validatorInfo) {
@@ -71,14 +72,15 @@ export class PostgreSql {
 					exposure_total_bal,\
 					exposure_own_bal\
 				)\
-				VALUES ($1, $2, $3, $4, $5, $6, $7)\
+				VALUES ($1, $2, $3, $4, $5, $6)\
+				RETURNING id\
 			", [
 				eraInfoId,
 				chainData.unixTime,
-				chainData.blockNumber,
-				validator.accountId,
-				validator.exposure.total,
-				validator.exposure.own,
+				chainData.blockNumber.toNumber(),
+				validator.accountId.toHuman(),
+				validator.exposure.total.toNumber(),
+				validator.exposure.own.toNumber(),
 			])).rows[0].id;
 
 			for (const other of validator.exposure.others) {
@@ -88,26 +90,26 @@ export class PostgreSql {
 						account_addr,\
 						exposure_bal\
 					)\
-					VALUES ($1, $2, $3, $4)\
+					VALUES ($1, $2, $3)\
 				", [
 					eraInfoId,
-					other.who,
-					other.value,
+					other.who.toHuman(),
+					other.value.toNumber(),
 				]);
 			}
 
 			for (const voter of validator.voters) {
 				await this.client.query("\
-					INSERT INTO votres (\
+					INSERT INTO voters (\
 						validator_rewards_id,\
 						account_addr,\
-						stake\
+						staked_bal\
 					)\
 					VALUES ($1, $2, $3)\
 				", [
 					ValidatorId,
 					voter.address,
-					voter.value
+					voter.value.toNumber()
 				]);
 			}
 		}

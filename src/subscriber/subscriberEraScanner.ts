@@ -91,19 +91,19 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
 
   private _triggerEraScannerActions = async (): Promise<void> => {
     this.logger.info("Fetching latest checked Era from database...");
-    const lastCheckedEra = await this.database.fetchLastCheckedEra();
+    let tobeCheckedEra = await this.database.fetchLastCheckedEra();
     const currentEra = this.eraIndex.toNumber();
 
-    let startFrom = lastCheckedEra;
-    if (currentEra > lastCheckedEra + 84) {
-      startFrom = currentEra - 84;
-      this.logger.warn(`Skipping eras from ${lastCheckedEra} to ${currentEra - 85}, max depth exceeded!`);
+    if (currentEra > tobeCheckedEra + 84) {
+      this.logger.warn(`Skipping eras from ${tobeCheckedEra} to ${currentEra - 85}, max depth exceeded!`);
+      tobeCheckedEra = currentEra - 84;
     } else {
-      this.logger.info(`Starting scan from Era ${startFrom} to ${currentEra - 1}`);
+      this.logger.info(`Starting scan from Era ${tobeCheckedEra} to ${currentEra - 1}`);
     }
 
-    while (startFrom < currentEra - 1) {
-      const tobeCheckedEra = lastCheckedEra + 1
+    this.logger.info(`Starting scan from ${tobeCheckedEra} to ${currentEra - 1}`);
+    while (tobeCheckedEra < currentEra - 1) {
+      tobeCheckedEra += 1;
       this.logger.info(`starting the CSV writing for the era ${tobeCheckedEra}`)
 
       // Prepare for gathering.
@@ -113,7 +113,9 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
       const chainData = await gatherChainDataHistorical(request, this.logger)
 
       // Insert the chainData into the database and track latest, checked Era.
+      this.logger.info("Inserting all gathered data into the database...");
       await this.database.insertChainData(chainData);
+      this.logger.info("Insertion into database completed");
     }
   }
 }
