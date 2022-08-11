@@ -23,7 +23,7 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
     super(cfg, logger)
     this.config = cfg;
 
-    logger.info(`Connecting to database at ${cfg.databaseUrl}...`);
+    logger.info(`Connecting to database at ${cfg.databaseUrl}...`)
     this.database = new PostgreSql(cfg.databaseUrl);
   }
 
@@ -90,7 +90,7 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
   }
 
   private _triggerEraScannerActions = async (): Promise<void> => {
-    this.logger.info("Fetchin latest checked Era from database...");
+    this.logger.info("Fetching latest checked Era from database...");
     const lastCheckedEra = await this.database.fetchLastCheckedEra();
     const currentEra = this.eraIndex.toNumber();
 

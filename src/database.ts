@@ -20,7 +20,7 @@ export class PostgreSql {
 		// It's debatable whether this should be optimized, such as using a
 		// single table for the last checked era and updating it on
 		// `insertChainData`. But this is probably sufficient.
-		return (await this.client.query("\
+		const lastEra = (await this.client.query("\
 			SELECT\
 				era_index\
 			FROM\
@@ -29,7 +29,13 @@ export class PostgreSql {
 				era_index\
 			DESC LIMIT\
 				1\
-		")).rows[0].id;
+		")).rows[0];
+
+		if (lastEra == undefined) {
+			return 0
+		} else {
+			return lastEra.era_index
+		}
 	}
 
 	public insertChainData = async (chainData: ChainData): Promise<void> => {
