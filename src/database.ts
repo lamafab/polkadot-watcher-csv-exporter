@@ -5,7 +5,9 @@ export class PostgreSql {
 	client: Client;
 
 	constructor(dbUrl: string) {
-		this.client = new Client(dbUrl);
+		this.client = new Client({
+			connectionString: dbUrl,
+		});
 	}
 
 	public start = async (): Promise<void> => {
