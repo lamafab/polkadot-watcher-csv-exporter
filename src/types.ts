@@ -39,3 +39,8 @@ export interface ChainData {
   validatorRewardsPreviousEra: BalanceOf;
   validatorInfo: MyDeriveStakingAccount[];
 }
+
+export interface EraLastBlock {
+  era: EraIndex;
+  block: number;
+}
