@@ -10,38 +10,12 @@ export interface InputConfig {
   port: number;
   endpoint: string;
   database_url: string;
-  exportDir: string;
-  sessionOnly: boolean;
-  endSessionBlockDistance: number;
-  bucketUpload?: BucketUploadConfig;
-  cronjob?: CronJobConfig;
-  apiChunkSize?: number;
   apiTimeoutMs?: number;
-  historic?: {
-    enabled: boolean;
-    historySize: number;
-  };
-  eraScanner?: {
-    enabled: boolean;
-    dataDir: string;
-    startFromEra?: number;
-  };
 }
 
 interface DebugConfig {
   enabled: boolean;
   forceInitialWrite: boolean;
-}
-
-export interface CronJobConfig {
-  enabled: boolean;
-}
-
-export interface BucketUploadConfig {
-  enabled: boolean;
-  gcpServiceAccount: string;
-  gcpProject: string;
-  gcpBucketName: string;
 }
 
 export interface MyDeriveStakingAccount extends DeriveStakingAccount {
@@ -64,9 +38,4 @@ export interface ChainData {
   totalIssuance: Balance;
   validatorRewardsPreviousEra: BalanceOf;
   validatorInfo: MyDeriveStakingAccount[];
-}
-
-export interface EraLastBlock {
-  era: EraIndex;
-  block: number;
 }
