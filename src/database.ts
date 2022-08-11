@@ -10,6 +10,8 @@ export class PostgreSql {
 
 	public start = async (): Promise<void> => {
 		await this.client.connect();
+		// Connection check.
+		await this.client.query("SELECT NOW()");
 	}
 
 	public fetchLastCheckedEra = async (): Promise<number> => {

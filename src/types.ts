@@ -9,7 +9,7 @@ export interface InputConfig {
   debug?: DebugConfig;
   healthCheckPort: number;
   endpoint: string;
-  database_url: string;
+  databaseUrl: string;
   apiTimeoutMs?: number;
 }
 

@@ -15,7 +15,6 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
   private config: InputConfig;
 
   private eraIndex: EraIndex;
-  private dataFileName = dataFileName
   private isScanOngoing = false //lock for concurrency
   private isNewScanRequired = false
   private database: PostgreSql;
@@ -23,19 +22,22 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
   constructor(cfg: InputConfig, protected readonly logger: Logger) {
     super(cfg, logger)
     this.config = cfg;
-    this.database = new PostgreSql(cfg.database_url);
+
+    logger.info(`Connecting to database at ${cfg.databaseUrl}...`);
+    this.database = new PostgreSql(cfg.databaseUrl);
   }
 
   public start = async (): Promise<void> => {
     this.logger.info('Era Scanner mode active')
 
+    await this.database.start();
     await this._initAPI();
     await this._initInstanceVariables();
     await this._handleEventsSubscriptions() // scan immediately after a event detection
 
     this.logger.info(`Event Scanner Based Module subscribed...`)
     // First scan after a restart
-    this._requestNewScan()
+    await this._requestNewScan();
   }
 
   private _initInstanceVariables = async (): Promise<void> => {
@@ -88,6 +90,7 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
   }
 
   private _triggerEraScannerActions = async (): Promise<void> => {
+    this.logger.info("Fetchin latest checked Era from database...");
     const lastCheckedEra = await this.database.fetchLastCheckedEra();
     const currentEra = this.eraIndex.toNumber();
 
@@ -95,6 +98,8 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
     if (currentEra > lastCheckedEra + 84) {
       startFrom = currentEra - 84;
       this.logger.warn(`Skipping eras from ${lastCheckedEra} to ${currentEra - 85}, max depth exceeded!`);
+    } else {
+      this.logger.info(`Starting scan from Era ${startFrom} to ${currentEra - 1}`);
     }
 
     while (startFrom < currentEra - 1) {
