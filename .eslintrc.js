@@ -10,7 +10,7 @@ module.exports = {
     'plugin:@typescript-eslint/recommended',
   ],
   "rules": {
-    "@typescript-eslint/camelcase": ["error", { "properties": "never" } ]
+    "@typescript-eslint/camelcase": ["error", { "properties": "never" }]
   },
   env: {
     node: true,
