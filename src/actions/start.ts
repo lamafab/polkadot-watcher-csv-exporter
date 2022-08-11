@@ -20,7 +20,7 @@ export const startAction = async (cmd): Promise<void> => {
         async (req: express.Request, res: express.Response): Promise<void> => {
             res.status(200).send('OK!')
         })
-    server.listen(cfg.port);
+    server.listen(cfg.healthCheckPort);
 
     const logger = _createLogger(cfg);
     const subscriber = new SubscriberEraScanner(cfg, logger);

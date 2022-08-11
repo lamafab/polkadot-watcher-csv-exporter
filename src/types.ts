@@ -7,7 +7,7 @@ import type { PalletStakingExposure } from '@polkadot/types/lookup';
 export interface InputConfig {
   logLevel: string;
   debug?: DebugConfig;
-  port: number;
+  healthCheckPort: number;
   endpoint: string;
   database_url: string;
   apiTimeoutMs?: number;

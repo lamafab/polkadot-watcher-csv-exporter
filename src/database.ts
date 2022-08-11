@@ -73,7 +73,7 @@ export class PostgreSql {
 
 			for (const other of validator.exposure.others) {
 				await this.client.query("\
-					INSERT INTO individual_era_points (\
+					INSERT INTO nominator_rewards (\
 						era_info_id,\
 						account_addr,\
 						exposure_bal\
