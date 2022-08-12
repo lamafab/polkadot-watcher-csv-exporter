@@ -7,17 +7,8 @@ repositories:
   url: https://w3f.github.io/helm-charts/
 
 releases:
-
-{{- if or (eq .Environment.Name "ci") (eq .Environment.Name "local") }} 
-
-- name: session-exporter
-  chart: ../charts/polkadot-watcher-csv-exporter
-  values:
-  - ./config/session-exporter-values.yaml.gotmpl
-
 - name: era-scanner
-  chart: ../charts/polkadot-watcher-csv-exporter
+  chart: ../charts/polkadot-era-scanner
+  namespace: polkadot-era-scanner
   values:
-  - ./config/era-scanner-values.yaml.gotmpl  
-
-{{- end }}
+  - ./config/polkadot-era-scanner.yaml.gotmpl  

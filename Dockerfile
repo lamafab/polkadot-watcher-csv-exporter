@@ -12,4 +12,4 @@ RUN yarn && \
   yarn build && \
   apk del make gcc g++ python3
 
-ENTRYPOINT ["yarn", "start"]
+ENTRYPOINT ["yarn", "start", "-c", "config.yaml"]

@@ -1,0 +1,4 @@
+logLevel: debug
+healthCheckPort: 8000
+endpoint: 'wss://kusama-rpc.polkadot.io'
+databaseUrl: 'postgres://postgres:postgres@db:5432/postgres'
