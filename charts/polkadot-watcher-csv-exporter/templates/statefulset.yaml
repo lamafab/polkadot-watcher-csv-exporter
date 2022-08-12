@@ -1,7 +1,4 @@
-{{ if ne .Values.config.cronjob.enabled true }}
-
-
-apiVersion: apps/v1
+habasrsion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ .Release.Name }}
@@ -42,7 +39,7 @@ spec:
         {{ if ne .Values.environment "ci" }}
         resources:
           {{- toYaml .Values.resources | nindent 10 }}
-        {{ end }}  
+        {{ end }}
         volumeMounts:
         - name: config
           mountPath: /app/config 
@@ -52,11 +49,11 @@ spec:
         {{ if ne .Values.environment "ci" }}    
         - name: data-csv
           mountPath: {{ .Values.config.exportDir }}
-        {{ if eq .Values.config.eraScanner.enabled true }} 
+          {{ if eq .Values.config.eraScanner.enabled true }} 
         - name: data-scanner
           mountPath: {{ .Values.config.eraScanner.dataDir }}
-        {{ end }}  
-        {{ end }}          
+          {{ end }}
+        {{ end }}
       volumes:
       - name: config
         configMap:
@@ -73,7 +70,7 @@ spec:
         {{ if eq .Values.config.eraScanner.enabled true }}   
       - name: data-scanner
         emptyDir: {}  
-        {{ end }}   
+        {{ end }}
       {{ else }}
   volumeClaimTemplates:
   - metadata:
@@ -91,8 +88,4 @@ spec:
       resources:
         requests:
           storage: 1Gi
-  {{ end }}                
-      {{ end }}
-
-
-{{ end }}        
+  {{ end }}
