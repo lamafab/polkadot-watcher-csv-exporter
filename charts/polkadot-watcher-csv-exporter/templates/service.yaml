@@ -7,6 +7,6 @@ metadata:
 spec:
   ports:
   - name: metrics
-    port: {{ .Values.config.port }}
+    port: {{ .Values.config.healthCheckPort }}
   selector:
     app: {{ .Release.Name }}
