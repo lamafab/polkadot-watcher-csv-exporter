@@ -1,5 +1,5 @@
-description: Polkadot Watcher
-name: polkadot-watcher-csv-exporter
+description: Polkadot Era Scanner
+name: polkadot-era-scanner
 version: v0.10.14
 appVersion: v0.10.14
 apiVersion: v2

@@ -1,51 +1,11 @@
 environment: production
 
 image:
-  repo: web3f/polkadot-watcher-csv-exporter
+  repo: web3f/polkadot-era-scanner
   #tag: latest
 
 config:
-  endpoint: "wss://kusama-rpc.polkadot.io"
-  port: 3000
-  logLevel: info
-  debug:
-    enabled: false
-    forceInitialWrite: false
-  exportDir: "/app/data-csv"
-  endSessionBlockDistance: 20
-  apiChunkSize: 2000
-  apiTimeoutMs: 180000
-  sessionOnly: false
-  bucketUpload:
-    enabled: false
-    gcpServiceAccount: '/app/service-account/credentials.json'
-    gcpProject: ''
-    gcpBucketName: '' 
-  cronjob:
-    enabled: false  
-    timeout: true
-  historic:
-    enabled: false
-    historySize: 5
-  eraScanner:
-    enabled: false
-    dataDir: "/app/data-scanner"
-    #startFromEra: 3309 
-
-
-secret:
-  gcpServiceAccountValue: |
-    {"type":"service_account","project_id":"xxx","private_key_id":"xxx","private_key":"xxx"}
-
-cronjob:
-  schedule: "* * * * *"    
-  tolerations: []
-  affinity: {}
-    
-resources: 
-  requests:
-    cpu: "600m"
-    memory: "1Gi"
-  limits:
-    cpu: "2000m"
-    memory: "2Gi" 
+  logLevel: debug
+  healthCheckPort: 8000
+  endpoint: 'wss://kusama-rpc.polkadot.io'
+  databaseUrl: 'postgres://postgres:postgres@db:5432/postgres'

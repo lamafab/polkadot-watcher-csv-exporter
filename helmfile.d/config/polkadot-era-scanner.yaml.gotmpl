@@ -5,13 +5,12 @@ image:
   tag: {{ env "CIRCLE_SHA1" | default "kind" }}
 {{ else if eq .Environment.Name "local" }}
 image:
-  repo: localhost:5000/polkadot-watcher-csv-exporter
+  repo: localhost:5000/polkadot-era-scanner
   tag: latest
 {{ end }}
 
 config:
-  debug:
-    enabled: true
-    forceInitialWrite: true
-  cronjob:
-    enabled: false  
+  logLevel: debug
+  healthCheckPort: 8000
+  endpoint: 'wss://kusama-rpc.polkadot.io'
+  databaseUrl: 'postgres://postgres:postgres@db:5432/postgres'
