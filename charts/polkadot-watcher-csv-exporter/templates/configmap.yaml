@@ -3,5 +3,5 @@ kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}
 data:
-  main.yaml: |-
+  config.yaml: |-
 {{ toYaml .Values.config | indent 4 }}
