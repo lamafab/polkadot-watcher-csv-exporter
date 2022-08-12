@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app: {{ .Release.Name }}
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  serviceName: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}  
+    spec:
+      containers:
+      - name: {{ .Release.Name }}
+        image: {{ .Values.image.repo }}:{{ .Values.image.tag | default .Chart.AppVersion }}
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: metrics
+          containerPort: {{ .Values.config.healthCheckPort }}
+        livenessProbe:
+          httpGet:
+            path: /healthcheck
+            port: {{ .Values.config.healthCheckPort }}
+          initialDelaySeconds: 10
+          timeoutSeconds: 200
+        {{ if ne .Values.environment "ci" }}
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+        {{ end }}  
+      volumes:
+      - name: config
+        configMap:
+          name: {{ .Release.Name }}  
+      {{ if ne .Values.environment "production" }}
+      - name: data-csv
+        emptyDir: {}
+      {{ else }}
+  volumeClaimTemplates:
+  - metadata:
+      name: data-csv
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
+  {{ if eq .Values.config.eraScanner.enabled true }}           
+  - metadata:
+      name: data-scanner
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
+  {{ end }}                
+      {{ end }}

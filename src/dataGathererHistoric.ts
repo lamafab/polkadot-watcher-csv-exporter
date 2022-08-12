@@ -35,7 +35,8 @@ const _gatherDataHistorical = async (request: ChainDataHistoricalRequest, logger
   const erasExposure = (await api.derive.staking._erasExposure([eraIndex], false)).find(({ era }) => era.eq(eraIndex));
   const eraBlockReference = (await erasLastBlockFunction([eraIndex], api)).find(({ era }) => era.eq(eraIndex));
   const hashReference = await api.rpc.chain.getBlockHash(eraBlockReference.block)
-  const apiAt = await api.at(hashReference)
+  const apiAt = await api.at(hashReference);
+  const unixTime = (await apiAt.query.timestamp.now()).toNumber();
 
   logger.debug(`nominators...`)
   const nominators = await _getNominatorStaking(api, eraBlockReference, logger)
@@ -51,7 +52,7 @@ const _gatherDataHistorical = async (request: ChainDataHistoricalRequest, logger
 
   return {
     eraIndex: eraIndex,
-    unixTime: (await apiAt.query.timestamp.now()).toNumber(),
+    date: new Date(unixTime),
     blockNumber: api.createType('Compact<Balance>', eraBlockReference.block),
     eraPoints: await api.query.staking.erasRewardPoints(eraIndex),
     totalIssuance: await apiAt.query.balances.totalIssuance(),

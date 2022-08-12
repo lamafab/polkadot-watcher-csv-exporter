@@ -66,7 +66,7 @@ export class PostgreSql {
 			const ValidatorId = (await this.client.query("\
 				INSERT INTO validator_rewards (\
 					era_info_id,\
-					unix_time,\
+					timestamp,\
 					block_nr,\
 					account_addr,\
 					exposure_total_bal,\
@@ -76,7 +76,7 @@ export class PostgreSql {
 				RETURNING id\
 			", [
 				eraInfoId,
-				chainData.unixTime,
+				chainData.date,
 				chainData.blockNumber.toNumber(),
 				validator.accountId.toHuman(),
 				validator.exposure.total.toNumber(),

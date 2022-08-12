@@ -7,7 +7,7 @@ CREATE TABLE era_info (
 CREATE TABLE validator_rewards (
 	id SERIAL PRIMARY KEY,
 	era_info_id INT NOT NULL,
-	unix_time BIGINT NOT NULL,
+	timestamp TIMESTAMP NOT NULL,
 	block_nr INT NOT NULL,
 	account_addr TEXT NOT NULL,
 	exposure_total_bal BIGINT NOT NULL,

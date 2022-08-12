@@ -32,7 +32,7 @@ export interface Voter {
 
 export interface ChainData {
   eraIndex: EraIndex;
-  unixTime: number;
+  date: Date;
   blockNumber: Compact<BlockNumber>;
   eraPoints: EraRewardPoints;
   totalIssuance: Balance;

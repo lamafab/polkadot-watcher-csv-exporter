@@ -10,6 +10,6 @@ releases:
   - name: postgresql-14
     chart: bitnami/postgresql
     version: 11.1.13
-    namespace: matrix-server
+    namespace: polkadot-era-scanner
     values:
-      - ./config/postgresql-14-values-{{ .Environment.Name }}.yaml.gotmpl
+      - ./config/postgresql.yaml.gotmpl

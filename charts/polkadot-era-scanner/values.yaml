@@ -1,8 +1,8 @@
 environment: production
 
 image:
-  repo: web3f/polkadot-era-scanner
-  #tag: latest
+  repo: lamafab/polkadot-era-scanner
+  tag: latest
 
 config:
   logLevel: debug

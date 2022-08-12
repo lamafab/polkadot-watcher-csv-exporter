@@ -1,0 +1,32 @@
+volumePermissions:
+  enabled: true
+auth:
+  enablePostgresUser: true
+  postgresPassword: postgres
+  username: postgres
+  password: postgres
+  database: postgres
+  replicationUsername: repl_user
+  replicationPassword: repl_password
+architecture: replication
+primary:
+  initdb:
+    args: --lc-collate C --lc-ctype C --encoding UTF8
+  resources:
+    requests:
+      memory: 1Gi
+      cpu: 250m
+  persistence:
+    enabled: true
+    size: 200Gi
+readReplicas:
+  replicaCount: 2
+  persistence:
+    enabled: true
+    size: 200Gi
+  resources:
+    requests:
+      memory: 1Gi
+      cpu: 250m
+metrics:
+  enabled: true
