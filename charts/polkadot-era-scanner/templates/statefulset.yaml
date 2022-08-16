@@ -33,10 +33,6 @@ spec:
             port: {{ .Values.config.healthCheckPort }}
           initialDelaySeconds: 10
           timeoutSeconds: 200
-        {{ if ne .Values.environment "ci" }}
-        resources:
-          {{- toYaml .Values.resources | nindent 10 }}
-        {{ end }}  
       volumes:
       - name: config
         configMap:
