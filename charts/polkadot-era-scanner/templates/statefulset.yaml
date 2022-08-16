@@ -41,25 +41,3 @@ spec:
       - name: config
         configMap:
           name: {{ .Release.Name }}  
-      {{ if ne .Values.environment "production" }}
-      - name: data-csv
-        emptyDir: {}
-      {{ else }}
-  volumeClaimTemplates:
-  - metadata:
-      name: data-csv
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      resources:
-        requests:
-          storage: 1Gi
-  {{ if eq .Values.config.eraScanner.enabled true }}           
-  - metadata:
-      name: data-scanner
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      resources:
-        requests:
-          storage: 1Gi
-  {{ end }}                
-      {{ end }}
