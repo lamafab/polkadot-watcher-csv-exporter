@@ -9,6 +9,7 @@ repositories:
 releases:
 - name: era-scanner
   chart: ../charts/polkadot-era-scanner
+  version: v0.12
   namespace: polkadot-era-scanner
   values:
   - ./config/polkadot-era-scanner.yaml.gotmpl  
