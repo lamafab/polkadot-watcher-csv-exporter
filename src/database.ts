@@ -63,7 +63,7 @@ export class PostgreSql {
 		])).rows[0].id;
 
 		for (const validator of chainData.validatorInfo) {
-			console.log("val of validatorInfo:", validator);
+			//console.log("eraInfoId:", eraInfoId, "accountId:", validator.accountId.toHuman());
 			const ValidatorId = (await this.client.query("\
 				INSERT INTO validator_rewards (\
 					era_info_id,\
@@ -85,15 +85,16 @@ export class PostgreSql {
 			])).rows[0].id;
 
 			for (const other of validator.exposure.others) {
+				//console.log(">> nominator: eraInfoId:", eraInfoId, "accountId", other.who.toHuman(), "value", other.value.toBigInt());
 				await this.client.query("\
 					INSERT INTO nominator_rewards (\
-						era_info_id,\
+						validator_rewards_id,\
 						account_addr,\
 						exposure_bal\
 					)\
 					VALUES ($1, $2, $3)\
 				", [
-					eraInfoId,
+					ValidatorId,
 					other.who.toHuman(),
 					other.value.toBigInt(),
 				]);

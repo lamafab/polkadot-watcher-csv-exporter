@@ -2,7 +2,7 @@ volumePermissions:
   enabled: true
 auth:
   enablePostgresUser: true
-  postgresPassword: {{ env "PG_USERNAME" }}
+  postgresPassword: {{ env "PG_PASSWORD" }}
   username: {{ env "PG_USERNAME" }}
   password: {{ env "PG_PASSWORD" }}
   database: {{ env "PG_DBNAME" }}
