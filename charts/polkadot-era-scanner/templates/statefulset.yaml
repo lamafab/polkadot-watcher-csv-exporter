@@ -23,7 +23,10 @@ spec:
       containers:
       - name: {{ .Release.Name }}
         image: {{ .Values.image.repo }}:{{ .Values.image.tag | default .Chart.AppVersion }}
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
+        args:
+        - -c
+        - /app/config/config.yaml
         ports:
         - name: metrics
           containerPort: {{ .Values.config.healthCheckPort }}
@@ -33,6 +36,9 @@ spec:
             port: {{ .Values.config.healthCheckPort }}
           initialDelaySeconds: 10
           timeoutSeconds: 200
+        volumeMounts:
+        - name: config
+          mountPath: /app/config
       volumes:
       - name: config
         configMap:

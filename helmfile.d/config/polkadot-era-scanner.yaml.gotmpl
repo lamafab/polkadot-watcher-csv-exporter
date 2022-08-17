@@ -1,7 +1,12 @@
 environment: production
 
+useDomain: true
+domain: staking-dump.w3f.tech
+dbService: postgresql-14-primary
+dbPort: 5432
+
 config:
   logLevel: debug
   healthCheckPort: 8000
-  endpoint: 'polkadot-rpc-node'
+  endpoint: 'ws://polkadot-rpc-node-base-services-external-websockets.polkadot:9944'
   databaseUrl: 'postgres://{{ env "PG_USERNAME" }}:{{ env "PG_PASSWORD" }}@postgresql-14-primary/{{ env "PG_DBNAME" }}'
