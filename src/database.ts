@@ -59,10 +59,11 @@ export class PostgreSql {
 			RETURNING id\
 		", [
 			chainData.eraIndex.toNumber(),
-			chainData.eraPoints.total.toNumber(),
+			chainData.eraPoints.total.toBigInt(),
 		])).rows[0].id;
 
 		for (const validator of chainData.validatorInfo) {
+			console.log("val of validatorInfo:", validator);
 			const ValidatorId = (await this.client.query("\
 				INSERT INTO validator_rewards (\
 					era_info_id,\
@@ -79,8 +80,8 @@ export class PostgreSql {
 				chainData.date,
 				chainData.blockNumber.toNumber(),
 				validator.accountId.toHuman(),
-				validator.exposure.total.toNumber(),
-				validator.exposure.own.toNumber(),
+				validator.exposure.total.toBigInt(),
+				validator.exposure.own.toBigInt(),
 			])).rows[0].id;
 
 			for (const other of validator.exposure.others) {
@@ -94,7 +95,7 @@ export class PostgreSql {
 				", [
 					eraInfoId,
 					other.who.toHuman(),
-					other.value.toNumber(),
+					other.value.toBigInt(),
 				]);
 			}
 
@@ -109,7 +110,7 @@ export class PostgreSql {
 				", [
 					ValidatorId,
 					voter.address,
-					voter.value.toNumber()
+					voter.value.toBigInt()
 				]);
 			}
 		}

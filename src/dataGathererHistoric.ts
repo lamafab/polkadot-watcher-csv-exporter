@@ -56,7 +56,6 @@ const _gatherDataHistorical = async (request: ChainDataHistoricalRequest, logger
     blockNumber: api.createType('Compact<Balance>', eraBlockReference.block),
     eraPoints: await api.query.staking.erasRewardPoints(eraIndex),
     totalIssuance: await apiAt.query.balances.totalIssuance(),
-    validatorRewardsPreviousEra: (await api.query.staking.erasValidatorReward(eraIndex.sub(new BN(1)))).unwrap(),
     validatorInfo: myValidatorStaking
   } as ChainData
 }
