@@ -10,6 +10,6 @@ releases:
   - name: postgresql-14
     chart: bitnami/postgresql
     version: 11.1.13
-    namespace: polkadot-era-scanner
+    namespace: angela-era-scanner
     values:
       - ./config/postgresql.yaml.gotmpl

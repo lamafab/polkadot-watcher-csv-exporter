@@ -7,9 +7,9 @@ repositories:
     url: https://w3f.github.io/helm-charts/
 
 releases:
-  - name: era-scanner
+  - name: polkadot-era-scanner
     chart: ../charts/polkadot-era-scanner
     version: v0.12
-    namespace: polkadot-era-scanner
+    namespace: angela-era-scanner
     values:
       - ./config/polkadot-era-scanner.yaml.gotmpl
