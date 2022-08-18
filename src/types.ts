@@ -31,8 +31,7 @@ export interface Voter {
 }
 
 export interface ChainData {
-  chainName: string;
-  wsSource: string;
+  network: string;
   tokenDecimals: number;
   tokenSymbol: string;
   eraIndex: EraIndex;

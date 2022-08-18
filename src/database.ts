@@ -16,7 +16,7 @@ export class PostgreSql {
 		await this.client.query("SELECT NOW()");
 	}
 
-	public fetchLastCheckedEra = async (): Promise<number> => {
+	public fetchLastCheckedEra = async (network: string): Promise<number> => {
 		// It's debatable whether this should be optimized, such as using a
 		// single table for the last checked era and updating it on
 		// `insertChainData`. But this is probably sufficient.
@@ -25,11 +25,15 @@ export class PostgreSql {
 				era_index\
 			FROM\
 				era_info\
+			WHERE\
+				network = $1\
 			ORDER BY\
 				era_index\
 			DESC LIMIT\
 				1\
-		")).rows[0];
+		", [
+			network
+		])).rows[0];
 
 		if (lastEra == undefined) {
 			return 0
@@ -50,32 +54,20 @@ export class PostgreSql {
 	}
 
 	private _sqlInsertChainData = async (chainData: ChainData): Promise<void> => {
-		const chainInfoId = (await this.client.query("\
-			INSERT INTO chain_info (\
-				name,\
-				symbol,\
-				decimals,\
-				ws_source\
-			)\
-			VALUES ($1, $2, $3, $4)\
-			RETURNING id\
-		", [
-			chainData.chainName,
-			chainData.tokenSymbol,
-			chainData.tokenDecimals,
-			chainData.wsSource,
-		])).rows[0].id;
-
 		const eraInfoId = (await this.client.query("\
 			INSERT INTO era_info (\
-				chain_info_id,\
+				network,\
+				symbol,\
+				decimals,\
 				era_index,\
 				era_points_total\
 			)\
-			VALUES ($1, $2, $3)\
+			VALUES ($1, $2, $3, $4, $5)\
 			RETURNING id\
 		", [
-			chainInfoId,
+			chainData.network,
+			chainData.tokenSymbol,
+			chainData.tokenDecimals,
 			chainData.eraIndex.toNumber(),
 			chainData.eraPoints.total.toBigInt(),
 		])).rows[0].id;

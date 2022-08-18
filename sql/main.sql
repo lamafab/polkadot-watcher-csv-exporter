@@ -1,21 +1,12 @@
-CREATE TABLE chain_info (
-	id SERIAL PRIMARY KEY,
-	name TEXT NOT NULL,
-	symbol TEXT NOT NULL,
-	decimals TEXT NOT NULL,
-	ws_source TEXT NOT NULL
-);
-
 CREATE TABLE era_info (
 	id SERIAL PRIMARY KEY,
-	chain_info_id INT NOT NULL,
+	network TEXT NOT NULL,
+	symbol TEXT NOT NULL,
+	decimals INT NOT NULL,
 	era_index INT NOT NULL,
 	era_points_total BIGINT NOT NULL,
 
-	FOREIGN KEY (chain_info_id)
-		REFERENCES chain_info (id),
-
-	UNIQUE (era_index)
+	UNIQUE (network, era_index)
 );
 
 CREATE TABLE validator_rewards (

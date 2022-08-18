@@ -18,6 +18,7 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
   private isScanOngoing = false //lock for concurrency
   private isNewScanRequired = false
   private database: PostgreSql;
+  private network;
 
   constructor(cfg: InputConfig, protected readonly logger: Logger) {
     super(cfg, logger)
@@ -34,6 +35,7 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
     await this._initAPI();
     await this._initInstanceVariables();
     await this._handleEventsSubscriptions() // scan immediately after a event detection
+    this.network = this.chain.toString().toLowerCase();
 
     this.logger.info(`Event Scanner Based Module subscribed...`)
     // First scan after a restart
@@ -80,7 +82,7 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
           */
         } while (this.isNewScanRequired);
       } catch (error) {
-        this.logger.error(`the SCAN had an issue ! last checked era: ${await this.database.fetchLastCheckedEra()}: ${error}`)
+        this.logger.error(`the SCAN had an issue ! last checked era: ${await this.database.fetchLastCheckedEra(this.network)}: ${error}`)
         this.logger.warn('quitting...')
         process.exit(-1);
       } finally {
@@ -91,7 +93,7 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
 
   private _triggerEraScannerActions = async (): Promise<void> => {
     this.logger.info("Fetching latest checked Era from database...");
-    let tobeCheckedEra = await this.database.fetchLastCheckedEra();
+    let tobeCheckedEra = await this.database.fetchLastCheckedEra(this.network);
     const currentEra = this.eraIndex.toNumber();
 
     if (currentEra > tobeCheckedEra + 84) {
@@ -107,9 +109,8 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
       this.logger.info(`starting the CSV writing for the era ${tobeCheckedEra}`)
 
       // Prepare for gathering.
-      const network = this.chain.toString().toLowerCase()
       const eraIndex = this.api.createType("EraIndex", tobeCheckedEra)
-      const request = { api: this.api, network, endpoint: this.endpoint, eraIndex }
+      const request = { api: this.api, network: this.network, eraIndex }
       const chainData = await gatherChainDataHistorical(request, this.logger)
 
       // Insert the chainData into the database and track latest, checked Era.

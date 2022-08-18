@@ -14,7 +14,6 @@ import type { PalletStakingNominations, PalletStakingStakingLedger, PalletStakin
 export interface ChainDataHistoricalRequest {
   api: ApiPromise;
   network: string;
-  endpoint: string;
   eraIndex: EraIndex;
 }
 
@@ -56,8 +55,7 @@ const _gatherDataHistorical = async (request: ChainDataHistoricalRequest, logger
   const tokenSymbol = chainProperties.tokenSymbol.unwrap().toArray()[0].toString();
 
   return {
-    chainName: request.network,
-    wsSource: request.endpoint,
+    network: request.network,
     tokenDecimals: tokenDecimals,
     tokenSymbol: tokenSymbol,
     eraIndex: eraIndex,
