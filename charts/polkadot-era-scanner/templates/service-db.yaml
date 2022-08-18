@@ -13,4 +13,6 @@ spec:
     targetPort: 5432
     port: 5432
   selector:
-    app.kubernetes.io/instance: postgresql-14-read
+    app.kubernetes.io/component: primary
+    app.kubernetes.io/instance: postgresql-14
+    app.kubernetes.io/name: postgresql
