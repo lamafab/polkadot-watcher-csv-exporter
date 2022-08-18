@@ -4,11 +4,6 @@ image:
   repo: lamafab/polkadot-era-scanner
   tag: latest
 
-useDomain: false
-domain: example.com
-dbService: postgresql-14-primary
-dbPort: 5432
-
 config:
   logLevel: debug
   healthCheckPort: 8000
