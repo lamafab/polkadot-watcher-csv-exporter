@@ -52,12 +52,14 @@ const _gatherDataHistorical = async (request: ChainDataHistoricalRequest, logger
   logger.debug(`got validators...`)
 
   const chainProperties = api.registry.getChainProperties();
+  const tokenDecimals = chainProperties.tokenDecimals.unwrap().toArray()[0].toNumber();
+  const tokenSymbol = chainProperties.tokenSymbol.unwrap().toArray()[0].toString();
 
   return {
     chainName: request.network,
     wsSource: request.endpoint,
-    tokenDecimals: chainProperties.tokenDecimals[0],
-    tokenSymbol: chainProperties.tokenSymbol[0],
+    tokenDecimals: tokenDecimals,
+    tokenSymbol: tokenSymbol,
     eraIndex: eraIndex,
     date: new Date(unixTime),
     blockNumber: api.createType('Compact<Balance>', eraBlockReference.block),

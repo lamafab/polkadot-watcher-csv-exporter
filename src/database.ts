@@ -61,9 +61,9 @@ export class PostgreSql {
 			RETURNING id\
 		", [
 			chainData.chainName,
-			chainData.wsSource,
-			chainData.tokenDecimals,
 			chainData.tokenSymbol,
+			chainData.tokenDecimals,
+			chainData.wsSource,
 		])).rows[0].id;
 
 		const eraInfoId = (await this.client.query("\

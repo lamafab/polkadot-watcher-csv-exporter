@@ -15,7 +15,7 @@ CREATE TABLE era_info (
 	FOREIGN KEY (chain_info_id)
 		REFERENCES chain_info (id),
 
-	UNIQUE (chain_info_id, era_index)
+	UNIQUE (era_index)
 );
 
 CREATE TABLE validator_rewards (
