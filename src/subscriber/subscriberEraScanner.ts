@@ -109,7 +109,7 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
       // Prepare for gathering.
       const network = this.chain.toString().toLowerCase()
       const eraIndex = this.api.createType("EraIndex", tobeCheckedEra)
-      const request = { api: this.api, network, eraIndex }
+      const request = { api: this.api, network, endpoint: this.endpoint, eraIndex }
       const chainData = await gatherChainDataHistorical(request, this.logger)
 
       // Insert the chainData into the database and track latest, checked Era.

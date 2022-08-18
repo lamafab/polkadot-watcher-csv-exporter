@@ -50,14 +50,32 @@ export class PostgreSql {
 	}
 
 	private _sqlInsertChainData = async (chainData: ChainData): Promise<void> => {
+		const chainInfoId = (await this.client.query("\
+			INSERT INTO chain_info (\
+				name,\
+				symbol,\
+				decimals,\
+				ws_source\
+			)\
+			VALUES ($1, $2, $3, $4)\
+			RETURNING id\
+		", [
+			chainData.chainName,
+			chainData.wsSource,
+			chainData.tokenDecimals,
+			chainData.tokenSymbol,
+		])).rows[0].id;
+
 		const eraInfoId = (await this.client.query("\
 			INSERT INTO era_info (\
+				chain_info_id,\
 				era_index,\
 				era_points_total\
 			)\
-			VALUES ($1, $2)\
+			VALUES ($1, $2, $3)\
 			RETURNING id\
 		", [
+			chainInfoId,
 			chainData.eraIndex.toNumber(),
 			chainData.eraPoints.total.toBigInt(),
 		])).rows[0].id;
