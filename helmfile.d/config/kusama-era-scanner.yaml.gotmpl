@@ -1,0 +1,7 @@
+environment: production
+
+config:
+  logLevel: debug
+  healthCheckPort: 8000
+  endpoint: 'ws://rpc-node-base-services-external-websockets.kusama:9944'
+  databaseUrl: 'postgres://{{ env "PG_USERNAME" }}:{{ env "PG_PASSWORD" }}@postgresql-14-primary/{{ env "PG_DBNAME" }}'
