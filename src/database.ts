@@ -57,16 +57,20 @@ export class PostgreSql {
 		const eraInfoId = (await this.client.query("\
 			INSERT INTO era_info (\
 				network,\
+				timestamp,\
+				block_nr,\
 				symbol,\
 				decimals,\
 				validator_payout,\
 				era_index,\
 				era_points_total\
 			)\
-			VALUES ($1, $2, $3, $4, $5, $6)\
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8)\
 			RETURNING id\
 		", [
 			chainData.network,
+			chainData.date,
+			chainData.blockNumber.toNumber(),
 			chainData.tokenSymbol,
 			chainData.tokenDecimals,
 			chainData.validatorRewards,
@@ -79,18 +83,14 @@ export class PostgreSql {
 			const ValidatorId = (await this.client.query("\
 				INSERT INTO validator_rewards (\
 					era_info_id,\
-					timestamp,\
-					block_nr,\
 					account_addr,\
 					exposure_total_bal,\
 					exposure_own_bal\
 				)\
-				VALUES ($1, $2, $3, $4, $5, $6)\
+				VALUES ($1, $2, $3, $4)\
 				RETURNING id\
 			", [
 				eraInfoId,
-				chainData.date,
-				chainData.blockNumber.toNumber(),
 				validator.accountId.toHuman(),
 				validator.exposure.total.toBigInt(),
 				validator.exposure.own.toBigInt(),

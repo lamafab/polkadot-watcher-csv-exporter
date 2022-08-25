@@ -1,6 +1,8 @@
 CREATE TABLE era_info (
 	id SERIAL PRIMARY KEY,
 	network TEXT NOT NULL,
+	timestamp TIMESTAMP NOT NULL,
+	block_nr INT NOT NULL,
 	symbol TEXT NOT NULL,
 	decimals INT NOT NULL,
 	validator_payout BIGINT NOT NULL,
@@ -13,8 +15,6 @@ CREATE TABLE era_info (
 CREATE TABLE validator_rewards (
 	id SERIAL PRIMARY KEY,
 	era_info_id INT NOT NULL,
-	timestamp TIMESTAMP NOT NULL,
-	block_nr INT NOT NULL,
 	account_addr TEXT NOT NULL,
 	exposure_total_bal BIGINT NOT NULL,
 	exposure_own_bal BIGINT NOT NULL,
