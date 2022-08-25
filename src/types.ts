@@ -37,6 +37,7 @@ export interface ChainData {
   eraIndex: EraIndex;
   date: Date;
   blockNumber: Compact<BlockNumber>;
+  validatorRewards: bigint;
   eraPoints: EraRewardPoints;
   totalIssuance: Balance;
   validatorInfo: MyDeriveStakingAccount[];

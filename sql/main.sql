@@ -3,6 +3,7 @@ CREATE TABLE era_info (
 	network TEXT NOT NULL,
 	symbol TEXT NOT NULL,
 	decimals INT NOT NULL,
+	validator_payout BIGINT NOT NULL,
 	era_index INT NOT NULL,
 	era_points_total BIGINT NOT NULL,
 

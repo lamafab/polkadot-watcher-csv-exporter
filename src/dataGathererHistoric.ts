@@ -31,6 +31,7 @@ const _gatherDataHistorical = async (request: ChainDataHistoricalRequest, logger
   logger.info(`Requested era: ${eraIndex}`);
   logger.debug(`Gathering data ...`);
 
+  const validatorRewards = (await api.query.staking.erasValidatorReward(eraIndex)).unwrap().toBigInt()
   const erasPoints = (await api.derive.staking._erasPoints([eraIndex], false)).find(({ era }) => era.eq(eraIndex));
   const erasExposure = (await api.derive.staking._erasExposure([eraIndex], false)).find(({ era }) => era.eq(eraIndex));
   const eraBlockReference = (await erasLastBlockFunction([eraIndex], api)).find(({ era }) => era.eq(eraIndex));
@@ -61,6 +62,7 @@ const _gatherDataHistorical = async (request: ChainDataHistoricalRequest, logger
     eraIndex: eraIndex,
     date: new Date(unixTime),
     blockNumber: api.createType('Compact<Balance>', eraBlockReference.block),
+    validatorRewards,
     eraPoints: await api.query.staking.erasRewardPoints(eraIndex),
     totalIssuance: await apiAt.query.balances.totalIssuance(),
     validatorInfo: myValidatorStaking

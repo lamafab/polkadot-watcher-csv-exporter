@@ -59,15 +59,17 @@ export class PostgreSql {
 				network,\
 				symbol,\
 				decimals,\
+				validator_payout,\
 				era_index,\
 				era_points_total\
 			)\
-			VALUES ($1, $2, $3, $4, $5)\
+			VALUES ($1, $2, $3, $4, $5, $6)\
 			RETURNING id\
 		", [
 			chainData.network,
 			chainData.tokenSymbol,
 			chainData.tokenDecimals,
+			chainData.validatorRewards,
 			chainData.eraIndex.toNumber(),
 			chainData.eraPoints.total.toBigInt(),
 		])).rows[0].id;
