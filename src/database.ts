@@ -61,8 +61,8 @@ export class PostgreSql {
 				symbol,\
 				decimals,\
 				era_index,\
-				rewards_total_bal\
-				era_points_total,\
+				rewards_total_bal,\
+				era_points_total\
 			)\
 			VALUES ($1, $2, $3, $4, $5, $6, $7)\
 			RETURNING id\
@@ -82,16 +82,18 @@ export class PostgreSql {
 				INSERT INTO validator_rewards (\
 					era_info_id,\
 					account_addr,\
+					other_reward_destination,\
 					era_points,\
 					commission,\
 					exposure_total_bal,\
 					exposure_own_bal\
 				)\
-				VALUES ($1, $2, $3, $4, $5, $6)\
+				VALUES ($1, $2, $3, $4, $5, $6, $7)\
 				RETURNING id\
 			", [
 				eraInfoId,
 				validator.accountId.toHuman(),
+				validator.rewardDestination,
 				validator.eraPoints,
 				validator.commission,
 				validator.exposureTotal,

@@ -50,6 +50,7 @@ const _gatherDataHistorical = async (request: ChainDataHistoricalRequest, logger
   for (const [validatorId, validatorPoints] of eraPoints.individual) {
     const exposure = await api.query.staking.erasStakers(eraIndex, validatorId);
     const prefs = await api.query.staking.erasValidatorPrefs(eraIndex, validatorId);
+    const payee = await api.query.staking.payee(validatorId);
 
     const nominatorInfos: NominatorInfo[] = [];
     for (const nominator of exposure.others) {
@@ -59,8 +60,14 @@ const _gatherDataHistorical = async (request: ChainDataHistoricalRequest, logger
       } as NominatorInfo);
     }
 
+    let rewardDestination = null;
+    if (payee.isAccount) {
+      rewardDestination = payee.asAccount.toHuman();
+    }
+
     validatorInfos.push({
       accountId: validatorId,
+      rewardDestination: rewardDestination,
       eraPoints: validatorPoints.toNumber(),
       exposureOwn: exposure.own.toBigInt(),
       exposureTotal: exposure.total.toBigInt(),

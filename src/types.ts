@@ -20,6 +20,7 @@ interface DebugConfig {
 
 export interface ValidatorInfo {
   accountId: AccountId;
+  rewardDestination: string | null;
   eraPoints: number;
   exposureOwn: bigint;
   exposureTotal: bigint;

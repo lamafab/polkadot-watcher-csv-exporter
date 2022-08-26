@@ -15,6 +15,7 @@ CREATE TABLE validator_rewards (
 	id SERIAL PRIMARY KEY,
 	era_info_id INT NOT NULL,
 	account_addr TEXT NOT NULL,
+	other_reward_destination TEXT,
 	era_points INT NOT NULL,
 	commission INT NOT NULL,
 	exposure_total_bal BIGINT NOT NULL,
