@@ -58,45 +58,49 @@ export class PostgreSql {
 			INSERT INTO era_info (\
 				network,\
 				timestamp,\
-				block_nr,\
 				symbol,\
 				decimals,\
-				validator_payout,\
 				era_index,\
+				rewards_total_bal,\
 				era_points_total\
 			)\
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8)\
+			VALUES ($1, $2, $3, $4, $5, $6, $7)\
 			RETURNING id\
 		", [
 			chainData.network,
-			chainData.date,
-			chainData.blockNumber.toNumber(),
+			chainData.timestamp,
 			chainData.tokenSymbol,
 			chainData.tokenDecimals,
-			chainData.validatorRewards,
 			chainData.eraIndex.toNumber(),
-			chainData.eraPoints.total.toBigInt(),
+			chainData.totalValidatorRewards,
+			chainData.totalEraPoints.toNumber(),
 		])).rows[0].id;
 
-		for (const validator of chainData.validatorInfo) {
+		for (const validator of chainData.validatorInfos) {
 			//console.log("eraInfoId:", eraInfoId, "accountId:", validator.accountId.toHuman());
 			const ValidatorId = (await this.client.query("\
 				INSERT INTO validator_rewards (\
 					era_info_id,\
 					account_addr,\
+					other_reward_destination,\
+					era_points,\
+					commission,\
 					exposure_total_bal,\
 					exposure_own_bal\
 				)\
-				VALUES ($1, $2, $3, $4)\
+				VALUES ($1, $2, $3, $4, $5, $6, $7)\
 				RETURNING id\
 			", [
 				eraInfoId,
 				validator.accountId.toHuman(),
-				validator.exposure.total.toBigInt(),
-				validator.exposure.own.toBigInt(),
+				validator.rewardDestination,
+				validator.eraPoints,
+				validator.commission,
+				validator.exposureTotal,
+				validator.exposureOwn,
 			])).rows[0].id;
 
-			for (const other of validator.exposure.others) {
+			for (const nominator of validator.nominators) {
 				//console.log(">> nominator: eraInfoId:", eraInfoId, "accountId", other.who.toHuman(), "value", other.value.toBigInt());
 				await this.client.query("\
 					INSERT INTO nominator_rewards (\
@@ -107,23 +111,8 @@ export class PostgreSql {
 					VALUES ($1, $2, $3)\
 				", [
 					ValidatorId,
-					other.who.toHuman(),
-					other.value.toBigInt(),
-				]);
-			}
-
-			for (const voter of validator.voters) {
-				await this.client.query("\
-					INSERT INTO voters (\
-						validator_rewards_id,\
-						account_addr,\
-						staked_bal\
-					)\
-					VALUES ($1, $2, $3)\
-				", [
-					ValidatorId,
-					voter.address,
-					voter.value.toBigInt()
+					nominator.accountId.toHuman(),
+					nominator.exposure,
 				]);
 			}
 		}

@@ -93,21 +93,22 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
 
   private _triggerEraScannerActions = async (): Promise<void> => {
     this.logger.info("Fetching latest checked Era from database...");
-    let tobeCheckedEra = await this.database.fetchLastCheckedEra(this.network);
+    let tobeCheckedEra = await this.database.fetchLastCheckedEra(this.network) + 1;
     const currentEra = this.eraIndex.toNumber();
 
-    if (currentEra > tobeCheckedEra + 84) {
+    if (currentEra - 84 > tobeCheckedEra) {
       this.logger.warn(`Skipping eras from ${tobeCheckedEra} to ${currentEra - 85}, max depth exceeded!`);
       tobeCheckedEra = currentEra - 84;
-    } else {
-      this.logger.info(`Starting scan from Era ${tobeCheckedEra} to ${currentEra - 1}`);
     }
 
-    this.logger.info(`Starting scan from ${tobeCheckedEra} to ${currentEra - 1}`);
-    while (tobeCheckedEra < currentEra - 1) {
-      tobeCheckedEra += 1;
-      this.logger.info(`starting the CSV writing for the era ${tobeCheckedEra}`)
+    if (tobeCheckedEra == currentEra-1) {
+      this.logger.debug(`Lastest era was already scanned, waiting for the next one...`);
+    } else {
+      this.logger.info(`Setting up scanner for era ${tobeCheckedEra} to ${currentEra - 1}`);
+    }
 
+    while (tobeCheckedEra < currentEra - 1) {
+      this.logger.info(`Scanning era ${tobeCheckedEra}`);
       // Prepare for gathering.
       const eraIndex = this.api.createType("EraIndex", tobeCheckedEra)
       const request = { api: this.api, network: this.network, eraIndex }
@@ -117,6 +118,8 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
       this.logger.info("Inserting all gathered data into the database...");
       await this.database.insertChainData(chainData);
       this.logger.info("Insertion into database completed");
+
+      tobeCheckedEra += 1;
     }
   }
 }
