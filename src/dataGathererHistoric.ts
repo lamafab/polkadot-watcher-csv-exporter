@@ -19,10 +19,7 @@ export interface ChainDataHistoricalRequest {
 }
 
 export const gatherChainDataHistorical = async (request: ChainDataHistoricalRequest, logger: Logger): Promise<ChainData> => {
-  logger.info(`Historical Data gathering triggered...`)
-  const data = await _gatherDataHistorical(request, logger)
-  logger.info(`Historical Data have been gathered.`)
-  return data
+  return (await _gatherDataHistorical(request, logger))
 }
 
 const _gatherDataHistorical = async (request: ChainDataHistoricalRequest, logger: Logger): Promise<ChainData> => {
@@ -35,7 +32,7 @@ const _gatherDataHistorical = async (request: ChainDataHistoricalRequest, logger
   const tokenSymbol = chainProperties.tokenSymbol.unwrap().toArray()[0].toString();
 
   // Get era info.
-  logger.debug(`Gathering info about era ${eraIndex}...`);
+  logger.debug(`Gathering info about era...`);
   const eraBlockReference = (await erasLastBlockFunction([eraIndex], api)).find(({ era }) => era.eq(eraIndex));
   const hashReference = await api.rpc.chain.getBlockHash(eraBlockReference.block)
   const totalValidatorRewards = (await api.query.staking.erasValidatorReward(eraIndex)).unwrap();
