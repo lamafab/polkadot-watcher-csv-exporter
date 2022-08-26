@@ -115,9 +115,9 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
       const chainData = await gatherChainDataHistorical(request, this.logger)
 
       // Insert the chainData into the database and track latest, checked Era.
-      this.logger.info("Inserting all gathered data into the database...");
+      this.logger.debug("Inserting all gathered data into the database...");
       await this.database.insertChainData(chainData);
-      this.logger.info("Insertion into database completed");
+      this.logger.info("Insertion into database successfully completed!");
 
       tobeCheckedEra += 1;
     }
