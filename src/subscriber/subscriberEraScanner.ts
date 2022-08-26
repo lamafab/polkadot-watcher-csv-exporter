@@ -97,17 +97,19 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
     const currentEra = this.eraIndex.toNumber();
 
     if (currentEra - 84 > tobeCheckedEra) {
-      this.logger.warn(`Skipping eras from ${tobeCheckedEra} to ${currentEra - 85}, max depth exceeded!`);
+      this.logger.warn(`Skipping eras from ${tobeCheckedEra} to ${currentEra - 84}, max depth exceeded!`);
       tobeCheckedEra = currentEra - 84;
     }
 
     if (tobeCheckedEra == currentEra-1) {
       this.logger.debug(`Lastest era was already scanned, waiting for the next one...`);
     } else {
-      this.logger.info(`Setting up scanner for era ${tobeCheckedEra} to ${currentEra - 1}`);
+      this.logger.info(`Setting up scanner for era ${tobeCheckedEra + 1} to ${currentEra - 1}`);
     }
 
     while (tobeCheckedEra < currentEra - 1) {
+      tobeCheckedEra += 1;
+
       this.logger.info(`Scanning era ${tobeCheckedEra}`);
       // Prepare for gathering.
       const eraIndex = this.api.createType("EraIndex", tobeCheckedEra)
@@ -118,8 +120,6 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
       this.logger.debug("Inserting all gathered data into the database...");
       await this.database.insertChainData(chainData);
       this.logger.info("Insertion into database successfully completed!");
-
-      tobeCheckedEra += 1;
     }
   }
 }
