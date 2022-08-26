@@ -1,7 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 import { EraIndex, SessionIndex, BlockNumber, RewardPoint, Balance, BalanceOf } from '@polkadot/types/interfaces';
 import { Compact } from '@polkadot/types';
-import { DeriveStakingAccount } from '@polkadot/api-derive/staking/types';
+import { DeriveStakingAccount, DeriveStakingQuery } from '@polkadot/api-derive/staking/types';
 import type { PalletStakingExposure } from '@polkadot/types/lookup';
 
 export interface InputConfig {
@@ -19,10 +19,7 @@ interface DebugConfig {
 }
 
 export interface MyDeriveStakingAccount extends DeriveStakingAccount {
-  displayName?: string;
-  voters: Voter[];
   eraPoints: number;
-  exposure: PalletStakingExposure;
 }
 
 export interface Voter {
@@ -36,10 +33,9 @@ export interface ChainData {
   tokenSymbol: string;
   eraIndex: EraIndex;
   timestamp: Date;
-  blockNumber: number;
-  eraPoints: RewardPoint;
-  totalIssuance: Balance;
-  validatorInfo: MyDeriveStakingAccount[];
+  totalEraPoints: RewardPoint;
+  totalValidatorRewards: bigint;
+  stakingAccounts: MyDeriveStakingAccount[];
 }
 
 export interface EraLastBlock {

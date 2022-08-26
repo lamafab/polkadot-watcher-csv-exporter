@@ -10,6 +10,7 @@ import { DeriveAccountInfo } from '@polkadot/api-derive/accounts/types'
 import BN from 'bn.js';
 import type { EraIndex, StakingLedger, Nominations } from '@polkadot/types/interfaces';
 import type { PalletStakingNominations, PalletStakingStakingLedger, PalletStakingExposure } from '@polkadot/types/lookup';
+import { application } from 'express';
 
 export interface ChainDataHistoricalRequest {
   api: ApiPromise;
@@ -37,24 +38,30 @@ const _gatherDataHistorical = async (request: ChainDataHistoricalRequest, logger
   const tokenSymbol = chainProperties.tokenSymbol.unwrap().toArray()[0].toString();
 
   // Get era info.
-  const erasPoints = (await api.derive.staking._erasPoints([eraIndex], false)).find(({ era }) => era.eq(eraIndex));
-  const erasExposure = (await api.derive.staking._erasExposure([eraIndex], false)).find(({ era }) => era.eq(eraIndex));
-
   const eraBlockReference = (await erasLastBlockFunction([eraIndex], api)).find(({ era }) => era.eq(eraIndex));
   const hashReference = await api.rpc.chain.getBlockHash(eraBlockReference.block)
   const apiAt = await api.at(hashReference);
   const timestamp = new Date((await apiAt.query.timestamp.now()).toNumber());
-  const totalIssuance = await apiAt.query.balances.totalIssuance();
 
-  logger.debug(`Retrieving nominators...`)
-  const nominators = await _getNominatorStaking(api, eraBlockReference, logger)
-  logger.debug(`Retrieving validators...`)
-  const myValidatorStaking = await _getEraHistoricValidatorStakingInfo(
-    api,
-    erasPoints,
-    erasExposure,
-    nominators,
-  );
+  const totalValidatorRewards = (await api.query.staking.erasValidatorReward(eraIndex)).unwrap();
+
+  const eraPoints = await api.query.staking.erasRewardPoints(eraIndex);
+  const totalEraPoints = eraPoints.total;
+
+  const erasExposure = (await api.derive.staking._erasExposure([eraIndex], false)).find(({ era }) => era.eq(eraIndex));
+  const eraValidatorAddresses = Object.keys(erasExposure['validators']);
+  const deriveStakingAccounts = await api.derive.staking.accounts(eraValidatorAddresses);
+
+  const stakingAccounts: MyDeriveStakingAccount[] = [];
+  for (const account of deriveStakingAccounts) {
+    const validatorEraPoints = eraPoints.individual.get(account.accountId);
+    stakingAccounts.push(
+      {
+        ...account,
+        eraPoints: validatorEraPoints.toNumber(),
+      }
+    )
+  }
 
   logger.debug(`Data gathering for era ${eraIndex} completed!`);
 
@@ -64,10 +71,9 @@ const _gatherDataHistorical = async (request: ChainDataHistoricalRequest, logger
     tokenSymbol: tokenSymbol,
     eraIndex: eraIndex,
     timestamp: timestamp,
-    blockNumber: eraBlockReference.block,
-    eraPoints: erasPoints.eraPoints,
-    totalIssuance: totalIssuance,
-    validatorInfo: myValidatorStaking
+    totalEraPoints: totalEraPoints,
+    totalValidatorRewards: totalValidatorRewards.toBigInt(),
+    stakingAccounts: stakingAccounts,
   } as ChainData
 }
 
@@ -75,119 +81,4 @@ interface MyNominator {
   address: string;
   nominations: Nominations;
   ledger: StakingLedger;
-}
-
-const _getNominatorStaking = async (api: ApiPromise, eraLastBlock: EraLastBlock, logger: Logger): Promise<MyNominator[]> => {
-
-  const lastBlockHash = await api.rpc.chain.getBlockHash(eraLastBlock.block)
-  const apiAt = await api.at(lastBlockHash)
-  logger.debug(`Getting the nominator entries...`)
-  const nominators = await apiAt.query.staking.nominators.entries() //this call requires a node connection with an high --ws-max-out-buffer-capacity 
-  logger.debug(`Got ${nominators.length} nominator entries !!`)
-  const stakingLedgers = await apiAt.query.staking.ledger.entries() //this call requires a node connection with an high --ws-max-out-buffer-capacity
-  logger.debug(`Got ${stakingLedgers.length} ledger entries !!`)
-
-  const nominatorsMap = new Map<string, PalletStakingNominations[]>();
-  for (const nominator of nominators) {
-    const key = nominator[0].toHuman().toString()
-    const value = nominator[1].unwrap()
-    if (!nominatorsMap.has(key)) {
-      nominatorsMap.set(key, [])
-    }
-    else {
-      logger.debug("more attention needed, multiple nominators")
-    }
-    nominatorsMap.get(key).push(value)
-  }
-
-  const ledgersMap = new Map<string, PalletStakingStakingLedger[]>();
-  for (const ledger of stakingLedgers) {
-    const key = ledger[0].toHuman().toString()
-    const value = ledger[1].unwrap()
-    if (!ledgersMap.has(key)) {
-      ledgersMap.set(key, [])
-    }
-    else {
-      logger.debug("more attention needed, mutiple ledgers")
-    }
-    ledgersMap.get(key).push(value)
-  }
-
-  const nominatorsStakings: MyNominator[] = []
-  nominatorsMap.forEach((nominator, address) => {
-    if (ledgersMap.has(address)) {
-      nominatorsStakings.push({
-        "address": address,
-        "nominations": nominator[0],
-        "ledger": ledgersMap.get(address)[0]
-      })
-    }
-  })
-
-  return nominatorsStakings
-}
-
-const _getEraHistoricValidatorStakingInfo = async (api: ApiPromise, eraPoints: DeriveEraPoints, eraExposure: DeriveEraExposure, nominators: MyNominator[]): Promise<MyDeriveStakingAccount[]> => {
-  const eraValidatorAddresses = Object.keys(eraExposure['validators']);
-
-  const validatorStakings = await api.derive.staking.accounts(eraValidatorAddresses)
-  const validatorStakingsMap = new Map<string, DeriveStakingAccount>();
-  for (const vs of validatorStakings) {
-    const key = vs.accountId.toHuman().toString()
-    const value = vs
-    validatorStakingsMap.set(key, value)
-  }
-
-  const infoMap = new Map<string, DeriveAccountInfo>();
-  for (const address of validatorStakingsMap.keys()) {
-    // room for improvment
-    const info = await api.derive.accounts.info(address);
-    infoMap.set(address, info)
-  }
-
-  const votersMap = new Map<string, Voter[]>();
-  // init validators with no nominations
-  for (const address of validatorStakingsMap.keys()) {
-    votersMap.set(address, [])
-  }
-  for (const nominator of nominators) {
-    // key: validatorAddress
-    // value: array of {nominatorAddress,amount}
-
-    for (const validatorAddress of nominator.nominations.targets) {
-      const key = validatorAddress.toHuman().toString()
-      const value = { address: nominator.address, value: nominator.ledger.total }
-
-      if (!votersMap.has(key)) {
-        votersMap.set(key, [])
-      }
-      votersMap.get(key).push(value)
-    }
-
-  }
-
-  const deriveStakingAccounts: MyDeriveStakingAccount[] = []
-  for (const address of validatorStakingsMap.keys()) {
-
-    const validatorEraPoints = api.createType('RewardPoint', eraPoints.validators[address]);
-    const exposure: PalletStakingExposure = api.createType('PalletStakingExposure', eraExposure.validators[address]);
-
-    let displayName = null;
-    if (infoMap.has(address)) {
-      const { identity } = infoMap.get(address)
-      displayName = getDisplayName(identity)
-    }
-    else {
-      throw Error(`no infoMap entry for ${address}, this is a bug`);
-    }
-
-    deriveStakingAccounts.push({
-      ...validatorStakingsMap.get(address),
-      displayName: displayName,
-      voters: votersMap.get(address),
-      exposure: exposure,
-      eraPoints: validatorEraPoints.toNumber(),
-    })
-  }
-  return deriveStakingAccounts
 }
