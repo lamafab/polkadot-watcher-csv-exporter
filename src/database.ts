@@ -61,21 +61,21 @@ export class PostgreSql {
 				block_nr,\
 				symbol,\
 				decimals,\
-				validator_payout,\
 				era_index,\
-				era_points_total\
+				era_points_total,\
+				total_issuance\
 			)\
 			VALUES ($1, $2, $3, $4, $5, $6, $7, $8)\
 			RETURNING id\
 		", [
 			chainData.network,
-			chainData.date,
-			chainData.blockNumber.toNumber(),
+			chainData.timestamp,
+			chainData.blockNumber,
 			chainData.tokenSymbol,
 			chainData.tokenDecimals,
-			chainData.validatorRewards,
 			chainData.eraIndex.toNumber(),
-			chainData.eraPoints.total.toBigInt(),
+			chainData.eraPoints.toNumber(),
+			chainData.totalIssuance.toBigInt(),
 		])).rows[0].id;
 
 		for (const validator of chainData.validatorInfo) {
@@ -84,14 +84,22 @@ export class PostgreSql {
 				INSERT INTO validator_rewards (\
 					era_info_id,\
 					account_addr,\
+					account_display_name,\
+					era_points,\
+					commission,\
+					reward_destination,\
 					exposure_total_bal,\
 					exposure_own_bal\
 				)\
-				VALUES ($1, $2, $3, $4)\
+				VALUES ($1, $2, $3, $4, $5, $6)\
 				RETURNING id\
 			", [
 				eraInfoId,
 				validator.accountId.toHuman(),
+				validator.displayName,
+				validator.eraPoints,
+				validator.rewardDestination,
+				validator.validatorPrefs.commission.toNumber(),
 				validator.exposure.total.toBigInt(),
 				validator.exposure.own.toBigInt(),
 			])).rows[0].id;

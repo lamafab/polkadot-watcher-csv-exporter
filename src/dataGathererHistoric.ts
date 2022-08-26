@@ -25,46 +25,48 @@ export const gatherChainDataHistorical = async (request: ChainDataHistoricalRequ
 }
 
 const _gatherDataHistorical = async (request: ChainDataHistoricalRequest, logger: Logger): Promise<ChainData> => {
-  logger.debug(`gathering some data from the chain...`)
+  logger.debug(`Gathering some data from the chain...`)
   const { api, eraIndex } = request
 
   logger.info(`Requested era: ${eraIndex}`);
   logger.debug(`Gathering data ...`);
 
-  const validatorRewards = (await api.query.staking.erasValidatorReward(eraIndex)).unwrap().toBigInt()
+  // Get basic chain properties.
+  const chainProperties = api.registry.getChainProperties();
+  const tokenDecimals = chainProperties.tokenDecimals.unwrap().toArray()[0].toNumber();
+  const tokenSymbol = chainProperties.tokenSymbol.unwrap().toArray()[0].toString();
+
+  // Get era info.
   const erasPoints = (await api.derive.staking._erasPoints([eraIndex], false)).find(({ era }) => era.eq(eraIndex));
   const erasExposure = (await api.derive.staking._erasExposure([eraIndex], false)).find(({ era }) => era.eq(eraIndex));
+
   const eraBlockReference = (await erasLastBlockFunction([eraIndex], api)).find(({ era }) => era.eq(eraIndex));
   const hashReference = await api.rpc.chain.getBlockHash(eraBlockReference.block)
   const apiAt = await api.at(hashReference);
-  const unixTime = (await apiAt.query.timestamp.now()).toNumber();
+  const timestamp = new Date((await apiAt.query.timestamp.now()).toNumber());
+  const totalIssuance = await apiAt.query.balances.totalIssuance();
 
-  logger.debug(`nominators...`)
+  logger.debug(`Retrieving nominators...`)
   const nominators = await _getNominatorStaking(api, eraBlockReference, logger)
-  logger.debug(`got nominators...`)
-  logger.debug(`valdiators...`)
+  logger.debug(`Retrieving validators...`)
   const myValidatorStaking = await _getEraHistoricValidatorStakingInfo(
     api,
     erasPoints,
     erasExposure,
     nominators,
   );
-  logger.debug(`got validators...`)
 
-  const chainProperties = api.registry.getChainProperties();
-  const tokenDecimals = chainProperties.tokenDecimals.unwrap().toArray()[0].toNumber();
-  const tokenSymbol = chainProperties.tokenSymbol.unwrap().toArray()[0].toString();
+  logger.debug(`Data gathering for era ${eraIndex} completed!`);
 
   return {
     network: request.network,
     tokenDecimals: tokenDecimals,
     tokenSymbol: tokenSymbol,
     eraIndex: eraIndex,
-    date: new Date(unixTime),
-    blockNumber: api.createType('Compact<Balance>', eraBlockReference.block),
-    validatorRewards,
-    eraPoints: await api.query.staking.erasRewardPoints(eraIndex),
-    totalIssuance: await apiAt.query.balances.totalIssuance(),
+    timestamp: timestamp,
+    blockNumber: eraBlockReference.block,
+    eraPoints: erasPoints.eraPoints,
+    totalIssuance: totalIssuance,
     validatorInfo: myValidatorStaking
   } as ChainData
 }
@@ -79,11 +81,11 @@ const _getNominatorStaking = async (api: ApiPromise, eraLastBlock: EraLastBlock,
 
   const lastBlockHash = await api.rpc.chain.getBlockHash(eraLastBlock.block)
   const apiAt = await api.at(lastBlockHash)
-  logger.debug(`getting the nominator entries...`)
+  logger.debug(`Getting the nominator entries...`)
   const nominators = await apiAt.query.staking.nominators.entries() //this call requires a node connection with an high --ws-max-out-buffer-capacity 
-  logger.debug(`got ${nominators.length} nominator entries !!`)
+  logger.debug(`Got ${nominators.length} nominator entries !!`)
   const stakingLedgers = await apiAt.query.staking.ledger.entries() //this call requires a node connection with an high --ws-max-out-buffer-capacity
-  logger.debug(`got ${stakingLedgers.length} ledger entries !!`)
+  logger.debug(`Got ${stakingLedgers.length} ledger entries !!`)
 
   const nominatorsMap = new Map<string, PalletStakingNominations[]>();
   for (const nominator of nominators) {
@@ -128,7 +130,6 @@ const _getNominatorStaking = async (api: ApiPromise, eraLastBlock: EraLastBlock,
 const _getEraHistoricValidatorStakingInfo = async (api: ApiPromise, eraPoints: DeriveEraPoints, eraExposure: DeriveEraExposure, nominators: MyNominator[]): Promise<MyDeriveStakingAccount[]> => {
   const eraValidatorAddresses = Object.keys(eraExposure['validators']);
 
-  console.time('validatorStakings')
   const validatorStakings = await api.derive.staking.accounts(eraValidatorAddresses)
   const validatorStakingsMap = new Map<string, DeriveStakingAccount>();
   for (const vs of validatorStakings) {
@@ -136,18 +137,14 @@ const _getEraHistoricValidatorStakingInfo = async (api: ApiPromise, eraPoints: D
     const value = vs
     validatorStakingsMap.set(key, value)
   }
-  console.timeEnd('validatorStakings')
 
-  console.time('infoMap')
   const infoMap = new Map<string, DeriveAccountInfo>();
   for (const address of validatorStakingsMap.keys()) {
     // room for improvment
     const info = await api.derive.accounts.info(address);
     infoMap.set(address, info)
   }
-  console.timeEnd('infoMap')
 
-  console.time('votersMap')
   const votersMap = new Map<string, Voter[]>();
   // init validators with no nominations
   for (const address of validatorStakingsMap.keys()) {
@@ -168,27 +165,22 @@ const _getEraHistoricValidatorStakingInfo = async (api: ApiPromise, eraPoints: D
     }
 
   }
-  console.timeEnd('votersMap')
-  //votersMap.forEach((value,key)=>console.log(`valAddress: ${key} | voters: ${JSON.stringify(value)}`))
 
-
-  console.time('deriveStakingAccounts')
   const deriveStakingAccounts: MyDeriveStakingAccount[] = []
   for (const address of validatorStakingsMap.keys()) {
 
     const validatorEraPoints = api.createType('RewardPoint', eraPoints.validators[address]);
     const exposure: PalletStakingExposure = api.createType('PalletStakingExposure', eraExposure.validators[address]);
 
-    let displayName = ""
+    let displayName = null;
     if (infoMap.has(address)) {
       const { identity } = infoMap.get(address)
       displayName = getDisplayName(identity)
     }
     else {
-      console.log("no info map entry for " + address)
+      throw Error(`no infoMap entry for ${address}, this is a bug`);
     }
 
-    //console.log(`valAddress: ${address} | numVoters: ${votersMap.get(address).length} | voters: ${JSON.stringify(votersMap.get(address))}`)
     deriveStakingAccounts.push({
       ...validatorStakingsMap.get(address),
       displayName: displayName,
@@ -197,6 +189,5 @@ const _getEraHistoricValidatorStakingInfo = async (api: ApiPromise, eraPoints: D
       eraPoints: validatorEraPoints.toNumber(),
     })
   }
-  console.timeEnd('deriveStakingAccounts')
   return deriveStakingAccounts
 }
