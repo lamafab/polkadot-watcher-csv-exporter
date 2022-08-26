@@ -61,8 +61,8 @@ export class PostgreSql {
 				symbol,\
 				decimals,\
 				era_index,\
-				era_points_total,\
 				rewards_total_bal\
+				era_points_total,\
 			)\
 			VALUES ($1, $2, $3, $4, $5, $6, $7)\
 			RETURNING id\
@@ -72,35 +72,33 @@ export class PostgreSql {
 			chainData.tokenSymbol,
 			chainData.tokenDecimals,
 			chainData.eraIndex.toNumber(),
-			chainData.totalEraPoints,
 			chainData.totalValidatorRewards,
+			chainData.totalEraPoints.toNumber(),
 		])).rows[0].id;
 
-		for (const validator of chainData.stakingAccounts) {
+		for (const validator of chainData.validatorInfos) {
 			//console.log("eraInfoId:", eraInfoId, "accountId:", validator.accountId.toHuman());
 			const ValidatorId = (await this.client.query("\
 				INSERT INTO validator_rewards (\
 					era_info_id,\
 					account_addr,\
-					reward_destination,\
 					era_points,\
 					commission,\
 					exposure_total_bal,\
 					exposure_own_bal\
 				)\
-				VALUES ($1, $2, $3, $4, $5, $6, $7)\
+				VALUES ($1, $2, $3, $4, $5, $6)\
 				RETURNING id\
 			", [
 				eraInfoId,
 				validator.accountId.toHuman(),
 				validator.eraPoints,
-				validator.rewardDestination,
-				validator.validatorPrefs.commission.toNumber(),
-				validator.exposure.total.toBigInt(),
-				validator.exposure.own.toBigInt(),
+				validator.commission,
+				validator.exposureTotal,
+				validator.exposureOwn,
 			])).rows[0].id;
 
-			for (const other of validator.exposure.others) {
+			for (const nominator of validator.nominators) {
 				//console.log(">> nominator: eraInfoId:", eraInfoId, "accountId", other.who.toHuman(), "value", other.value.toBigInt());
 				await this.client.query("\
 					INSERT INTO nominator_rewards (\
@@ -111,8 +109,8 @@ export class PostgreSql {
 					VALUES ($1, $2, $3)\
 				", [
 					ValidatorId,
-					other.who.toHuman(),
-					other.value.toBigInt(),
+					nominator.accountId.toHuman(),
+					nominator.exposure,
 				]);
 			}
 		}

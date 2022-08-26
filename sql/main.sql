@@ -5,8 +5,8 @@ CREATE TABLE era_info (
 	symbol TEXT NOT NULL,
 	decimals INT NOT NULL,
 	era_index INT NOT NULL,
-	era_points_total INT NOT NULL,
 	rewards_total_bal BIGINT NOT NULL,
+	era_points_total INT NOT NULL,
 
 	UNIQUE (network, era_index)
 );
@@ -15,7 +15,6 @@ CREATE TABLE validator_rewards (
 	id SERIAL PRIMARY KEY,
 	era_info_id INT NOT NULL,
 	account_addr TEXT NOT NULL,
-	reward_destination TEXT NOT NULL,
 	era_points INT NOT NULL,
 	commission INT NOT NULL,
 	exposure_total_bal BIGINT NOT NULL,

@@ -1,5 +1,5 @@
 import { ApiPromise } from '@polkadot/api';
-import { EraIndex, SessionIndex, BlockNumber, RewardPoint, Balance, BalanceOf } from '@polkadot/types/interfaces';
+import { AccountId, EraIndex, SessionIndex, BlockNumber, RewardPoint, Balance, BalanceOf } from '@polkadot/types/interfaces';
 import { Compact } from '@polkadot/types';
 import { DeriveStakingAccount, DeriveStakingQuery } from '@polkadot/api-derive/staking/types';
 import type { PalletStakingExposure } from '@polkadot/types/lookup';
@@ -18,8 +18,18 @@ interface DebugConfig {
   forceInitialWrite: boolean;
 }
 
-export interface MyDeriveStakingAccount extends DeriveStakingAccount {
+export interface ValidatorInfo {
+  accountId: AccountId;
   eraPoints: number;
+  exposureOwn: bigint;
+  exposureTotal: bigint;
+  commission: number;
+  nominators: NominatorInfo[];
+}
+
+export interface NominatorInfo {
+  accountId: AccountId;
+  exposure: bigint;
 }
 
 export interface Voter {
@@ -33,9 +43,9 @@ export interface ChainData {
   tokenSymbol: string;
   eraIndex: EraIndex;
   timestamp: Date;
-  totalEraPoints: RewardPoint;
   totalValidatorRewards: bigint;
-  stakingAccounts: MyDeriveStakingAccount[];
+  totalEraPoints: RewardPoint;
+  validatorInfos: ValidatorInfo[];
 }
 
 export interface EraLastBlock {
