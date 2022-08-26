@@ -96,16 +96,9 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
     let tobeCheckedEra = await this.database.fetchLastCheckedEra(this.network) + 1;
     const currentEra = this.eraIndex.toNumber();
 
-    // To simplify things, we'll just use '82' as max depth to avoid off-by-one bugs.
-
-    if (currentEra - 82 > tobeCheckedEra) {
+    if (currentEra - 83 > tobeCheckedEra) {
       this.logger.warn(`Skipping eras from ${tobeCheckedEra} to ${currentEra - 83}, max depth exceeded!`);
-      tobeCheckedEra = currentEra - 82;
-    }
-
-    if (tobeCheckedEra == currentEra-1) {
-      this.logger.debug(`Lastest era was already scanned, waiting for the next one...`);
-    } else {
+      tobeCheckedEra = currentEra - 83;
       this.logger.info(`Setting up scanner for era ${tobeCheckedEra} to ${currentEra - 1}`);
     }
 
@@ -123,5 +116,7 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
 
       tobeCheckedEra += 1;
     }
+
+    this.logger.info(`All available eras scanned (last scanned era: ${tobeCheckedEra-1}), waiting for the next to complete...`);
   }
 }
