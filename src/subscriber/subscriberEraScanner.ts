@@ -99,7 +99,7 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
     // To simplify things, we'll just use '82' as max depth to avoid off-by-one bugs.
 
     if (currentEra - 82 > tobeCheckedEra) {
-      this.logger.warn(`Skipping eras from ${tobeCheckedEra} to ${currentEra - 82}, max depth exceeded!`);
+      this.logger.warn(`Skipping eras from ${tobeCheckedEra} to ${currentEra - 83}, max depth exceeded!`);
       tobeCheckedEra = currentEra - 82;
     }
 
