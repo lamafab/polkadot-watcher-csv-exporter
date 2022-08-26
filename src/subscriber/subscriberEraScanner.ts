@@ -96,20 +96,20 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
     let tobeCheckedEra = await this.database.fetchLastCheckedEra(this.network) + 1;
     const currentEra = this.eraIndex.toNumber();
 
-    if (currentEra - 84 > tobeCheckedEra) {
-      this.logger.warn(`Skipping eras from ${tobeCheckedEra} to ${currentEra - 84}, max depth exceeded!`);
-      tobeCheckedEra = currentEra - 84;
+    // To simplify things, we'll just use '82' as max depth to avoid off-by-one bugs.
+
+    if (currentEra - 82 > tobeCheckedEra) {
+      this.logger.warn(`Skipping eras from ${tobeCheckedEra} to ${currentEra - 82}, max depth exceeded!`);
+      tobeCheckedEra = currentEra - 82;
     }
 
     if (tobeCheckedEra == currentEra-1) {
       this.logger.debug(`Lastest era was already scanned, waiting for the next one...`);
     } else {
-      this.logger.info(`Setting up scanner for era ${tobeCheckedEra + 1} to ${currentEra - 1}`);
+      this.logger.info(`Setting up scanner for era ${tobeCheckedEra} to ${currentEra - 1}`);
     }
 
     while (tobeCheckedEra < currentEra - 1) {
-      tobeCheckedEra += 1;
-
       this.logger.info(`Scanning era ${tobeCheckedEra}`);
       // Prepare for gathering.
       const eraIndex = this.api.createType("EraIndex", tobeCheckedEra)
@@ -120,6 +120,8 @@ export class SubscriberEraScanner extends SubscriberTemplate implements ISubscri
       this.logger.debug("Inserting all gathered data into the database...");
       await this.database.insertChainData(chainData);
       this.logger.info("Insertion into database successfully completed!");
+
+      tobeCheckedEra += 1;
     }
   }
 }
